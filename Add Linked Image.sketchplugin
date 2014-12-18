@@ -1,0 +1,44 @@
+// Add linked image ()
+
+
+// Make sure only one layer is selected
+if ([selection count] == 1) {
+    var layer = selection[0];
+    if ([layer class] == [MSBitmapLayer class]) {
+        // Choose the file to link
+        var openPanel = [NSOpenPanel openPanel]
+        [openPanel setCanChooseDirectories:false]
+        [openPanel setCanChooseFiles:true]
+        [openPanel setCanCreateDirectories:false]
+        // [openPanel setDirectoryURL:[NSURL fileURLWithPath:"~/Documents/"]]
+
+        [openPanel setTitle:@"Choose an image"]
+        [openPanel setPrompt:@"Choose"]
+        if ([openPanel runModal] == NSOKButton)
+        {
+            var path = [openPanel URLs][0]
+            var data = [[NSFileManager defaultManager] contentsAtPath:path]
+            var img = [[NSImage alloc] initWithData:data]
+            var imageCollection = [[layer documentData] images]
+            var layerName = [layer name]
+            print(imageCollection.addImage_convertColourspace)
+            var imageData = [imageCollection addImage:img convertColourspace:false]
+            layer.image = imageData
+
+            // Update layer with linked image
+
+            // Update layer name with filename
+
+            // TODO: Update heading text
+            // TODO: Update screen number
+        }
+    }
+    else {
+        // Display a message
+        [doc showMessage:"You must select an image to replace"]
+    }
+}
+else {
+    // Display a message
+    [doc showMessage:"You must select an image to replace"]
+}
