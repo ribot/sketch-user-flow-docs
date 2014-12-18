@@ -16,21 +16,47 @@ if ([selection count] == 1) {
         [openPanel setPrompt:@"Choose"]
         if ([openPanel runModal] == NSOKButton)
         {
-            var path = [openPanel URLs][0]
+            var path = [openPanel URL]
             var data = [[NSFileManager defaultManager] contentsAtPath:path]
             var img = [[NSImage alloc] initWithData:data]
             var imageCollection = [[layer documentData] images]
             var layerName = [layer name]
-            print(imageCollection.addImage_convertColourspace)
+
+            // Update layer with linked image
             var imageData = [imageCollection addImage:img convertColourspace:false]
             layer.image = imageData
 
-            // Update layer with linked image
+            // Get folder and filename
+            path = [path URLByDeletingPathExtension]
+            var pathComponents = [path pathComponents]
+            var reversedPathComponents = [[pathComponents reverseObjectEnumerator] allObjects];
+            var folder = [reversedPathComponents objectAtIndex:1]
+            var filename = [reversedPathComponents objectAtIndex:0]
 
             // Update layer name with filename
+            layer.name = filename
 
-            // TODO: Update heading text
-            // TODO: Update screen number
+            // Get filename components
+            var filenameComponents = [filename componentsSeparatedByString:" "]
+            var screenNumber = filenameComponents[0]
+            var screenName = [filename substringFromIndex:screenNumber.length()+1]
+
+            // Update group name
+            var parent = [layer parentGroup]
+            parent.name = screenNumber
+
+            // Update screen number
+            var numberLayer = getChildLayerByName( parent, "Screen" )
+            if ( numberLayer ) {
+                numberLayer.setStringValue( screenNumber )
+            }
+
+            // Update heading text
+            var headingLayer = getChildLayerByName( parent, "Heading" )
+            if ( headingLayer ) {
+                headingLayer.setStringValue( screenName )
+            }
+
         }
     }
     else {
@@ -41,4 +67,18 @@ if ([selection count] == 1) {
 else {
     // Display a message
     [doc showMessage:"You must select an image to replace"]
+}
+
+function getChildLayerByName( group, name ) {
+    var layers = group.layers()
+    var layerLoop = [[layers array] objectEnumerator]
+
+    while (childLayer = [layerLoop nextObject]) {
+        if( [childLayer name] == name) {
+            return childLayer;
+        }
+    }
+
+    doc.showMessage( "No layer called " + name + " found" );
+    return false;
 }
