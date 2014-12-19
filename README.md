@@ -1,7 +1,8 @@
-# Sketch Linked Images
-This plugin lets you link images in a document with an extenal image file and update them all at once.
+# Sketch User Flows
+This plugin exports every artboard in your design document and allows you to create a user flows document for clients by populating a template.
 
-- Duplicate page under current (⌃⇧D)
+- Export for User Flows (⌃⇧E)
+- Populate User Flows (⌃⇧P)
 
 # Installation
 1. Download the repository using this [link](https://github.com/ribot/sketch-linked-images/archive/master.zip)
