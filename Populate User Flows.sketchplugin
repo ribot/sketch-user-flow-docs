@@ -96,54 +96,56 @@ function populateScreens(path) {
 		var fileLoop = files.objectEnumerator()
 		var count = 0
 	    while (file = fileLoop.nextObject()) {
-	    	// Keep track of page
 
             // Get filename and components
 	        var filename = file.lastPathComponent()
-            var screenNumber = [filename componentsSeparatedByString:" "][0]
-            var screenName = [filename substringFromIndex:screenNumber.length()+1]
 
-	    	// Get correct screen group
-	    	// TODO: Only do this once per page
-			var templateScreens = getTemplateScreens()
-	    	print( count )
-			var screenGroup = templateScreens.layers().array()[count]
+	    	if(!filename.hasPrefix("_")) {
+	            var screenNumber = [filename componentsSeparatedByString:" "][0]
+	            var screenName = [filename substringFromIndex:screenNumber.length()+1]
 
-	    	// Get image layer
-	    	var imageLayer = getChildLayerByName(screenGroup, "Placeholder")
+		    	// Get correct screen group
+		    	// TODO: Only do this once per page
+				var templateScreens = getTemplateScreens()
+		    	print( count )
+				var screenGroup = templateScreens.layers().array()[count]
 
-	    	// // Get image data
-            var data = fileManager.contentsAtPath(file)
-            var img = [[NSImage alloc] initWithData:data]
-            var imageCollection = [[imageLayer documentData] images]
-            var imageLayerName = [imageLayer name]
+		    	// Get image layer
+		    	var imageLayer = getChildLayerByName(screenGroup, "Placeholder")
 
-            // Update imageLayer with image
-            var imageData = [imageCollection addImage:img convertColourspace:false]
-            imageLayer.image = imageData
+		    	// // Get image data
+	            var data = fileManager.contentsAtPath(file)
+	            var img = [[NSImage alloc] initWithData:data]
+	            var imageCollection = [[imageLayer documentData] images]
+	            var imageLayerName = [imageLayer name]
 
-            // Update screen number
-            setTextOnChildLayerByName( screenGroup, "Number", screenNumber )
+	            // Update imageLayer with image
+	            var imageData = [imageCollection addImage:img convertColourspace:false]
+	            imageLayer.image = imageData
 
-            // Update heading text
-            setTextOnChildLayerByName( screenGroup, "Heading", screenName )
+	            // Update screen number
+	            setTextOnChildLayerByName( screenGroup, "Number", screenNumber )
 
-            // Update page title
-            // TODO: This should only be done once, really...
-      //       var artboard = [[[doc currentPage] artboards] firstObject]
-      //       setTextOnChildLayerByName( artboard, "Section", folder )
+	            // Update heading text
+	            setTextOnChildLayerByName( screenGroup, "Heading", screenName )
 
-            count++
+	            // Update page title
+	            // TODO: This should only be done once, really...
+	      //       var artboard = [[[doc currentPage] artboards] firstObject]
+	      //       setTextOnChildLayerByName( artboard, "Section", folder )
 
-            // If we're on the third screen, duplicate the page and go through loop again
-            if( !(count % 3) ) {
-            	count = 0
-            	pageCount++
+	            count++
 
-            	print("Start new page")
-            	// Duplicate page
-            	duplicateTemplatePage(pageCount)
-            }
+	            // If we're on the third screen, duplicate the page and go through loop again
+	            if( !(count % 3) ) {
+	            	count = 0
+	            	pageCount++
+
+	            	print("Start new page")
+	            	// Duplicate page
+	            	duplicateTemplatePage(pageCount)
+	            }
+			}
 	    }
     }
 
