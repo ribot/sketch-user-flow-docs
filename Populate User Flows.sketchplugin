@@ -19,10 +19,13 @@ function init() {
 	populateCover()
 
 	// Populate screens
-	populateScreens(path, templatePage, numberOfScreensPerPage)
+	populateScreens(path, templatePage, numberOfScreensPerPage, descriptions)
 
 	// Remove template
 	removeTemplatePage()
+
+	// Let it snow...
+	finish()
 }
 
 
@@ -42,7 +45,7 @@ function getExportsFolder() {
 
 // Get screens per page from Template > Artboard > Screens group
 function getScreensPerPageFromTemplate(templatePage) {
-    var artboard = (templatePage.artboards()).firstObject()
+    var artboard = templatePage.artboards().firstObject()
 
 	// Get Screens group
 	var screens = getChildLayerByName(artboard, 'Screens')
@@ -75,7 +78,7 @@ function getFirstTemplatePage() {
 
 
 // Populate screens
-function populateScreens(path, templatePage, numberOfScreensPerPage) {
+function populateScreens(path, templatePage, numberOfScreensPerPage, descriptions) {
 	// Duplicate Templates page to start
 	var pageCount = 0
 	var page = duplicateTemplatePage(templatePage)
@@ -128,6 +131,15 @@ function populateScreens(path, templatePage, numberOfScreensPerPage) {
 	            // Update heading text
 	            setTextOnChildLayerByName( screenGroup, "Heading", screenName )
 
+	            // Update description
+                var descriptionsJSON = JSON.parse(descriptions)
+			    var description = descriptionsJSON[sectionName][filename]
+
+			    if (typeof description != 'string') {
+			    	description = ""
+			    }
+	            setTextOnChildLayerByName( screenGroup, "Description", description )
+
 	            // Update page title
 	            if (count === 0) {
 		            var artboard = getCurrentArtboard()
@@ -175,8 +187,8 @@ function removeTemplatePage() {
 }
 
 // TODO: Show save dialog
-function saveDocument() {
-
+function finish() {
+	doc.showMessage( "All done!" );
 }
 
 function getCurrentArtboard() {
@@ -197,10 +209,10 @@ function getChildLayerByName(group, name) {
 
     while (childLayer = layerLoop.nextObject()) {
         if( childLayer.name() == name) {
-            return childLayer;
+            return childLayer
         }
     }
 
-    doc.showMessage( "No layer called " + name + " found" );
+    doc.showMessage( "No layer called " + name + " found" )
     return false;
 }

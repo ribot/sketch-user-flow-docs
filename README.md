@@ -13,6 +13,18 @@ This plugin exports every artboard in your design document and allows you to cre
 # Compatibility
 Tested on Sketch 3.2.1
 
+# TODO
+
+## Export for User Flows:
+- Ask user for project name
+- Add (hidden) project name to first(?) page
+
+## Populate User Flows:
+- Add descriptions
+- Update version and project name on cover page
+- Update project name on screen pages
+- Remove spare slots
+
 # Licence
 ```
 Copyright 2014 ribot
