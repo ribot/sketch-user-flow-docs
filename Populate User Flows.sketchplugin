@@ -1,7 +1,5 @@
 // Populate User Flows (command control p)
 
-var templatePage
-
 init()
 
 function init() {
@@ -12,16 +10,19 @@ function init() {
 	var descriptions = [NSString stringWithContentsOfURL:pathToDescriptionsJson encoding:NSUTF8StringEncoding error:null]
 
 	// Select first template page
-	templatePage = getFirstTemplatePage()
+	var templatePage = getFirstTemplatePage()
 
 	// Get number of screens per page
-	var numberOfScreensPerPage = getScreensPerPageFromTemplate()
+	var numberOfScreensPerPage = getScreensPerPageFromTemplate(templatePage)
 
 	// Populate cover
 	populateCover()
 
 	// Populate screens
-	populateScreens(path, numberOfScreensPerPage)
+	populateScreens(path, templatePage, numberOfScreensPerPage)
+
+	// Remove template
+	removeTemplatePage()
 }
 
 
@@ -40,7 +41,7 @@ function getExportsFolder() {
 }
 
 // Get screens per page from Template > Artboard > Screens group
-function getScreensPerPageFromTemplate() {
+function getScreensPerPageFromTemplate(templatePage) {
     var artboard = (templatePage.artboards()).firstObject()
 
 	// Get Screens group
@@ -50,11 +51,10 @@ function getScreensPerPageFromTemplate() {
     return screens.layers().length()
 }
 
-function getTemplateScreens() {
-	var template = doc.currentPage()
 
+function getTemplateScreens() {
     // Get first (and only) artboard
-    var artboard = (template.artboards()).firstObject()
+    var artboard = getCurrentArtboard()
 
     // Get the 'Screens' group
     return getChildLayerByName(artboard, 'Screens')
@@ -74,12 +74,11 @@ function getFirstTemplatePage() {
 }
 
 
-// TODO: Populate screens
-function populateScreens(path) {
-	// Duplicate Templates page
-	// Set to be currentPage
+// Populate screens
+function populateScreens(path, templatePage, numberOfScreensPerPage) {
+	// Duplicate Templates page to start
 	var pageCount = 0
-	duplicateTemplatePage(pageCount)
+	var page = duplicateTemplatePage(templatePage)
 
 	var fileManager = NSFileManager.defaultManager()
     var folders = fileManager.shallowSubpathsOfDirectoryAtURL(path)
@@ -98,11 +97,11 @@ function populateScreens(path) {
 	    while (file = fileLoop.nextObject()) {
 
             // Get filename and components
-	        var filename = file.lastPathComponent()
+	        var filename = file.lastPathComponent().stringByDeletingPathExtension()
 
 	    	if(!filename.hasPrefix("_")) {
-	            var screenNumber = [filename componentsSeparatedByString:" "][0]
-	            var screenName = [filename substringFromIndex:screenNumber.length()+1]
+	            var screenNumber = filename.componentsSeparatedByString(" ")[0]
+	            var screenName = filename.substringFromIndex(screenNumber.length()+1)
 
 		    	// Get correct screen group
 		    	// TODO: Only do this once per page
@@ -116,8 +115,8 @@ function populateScreens(path) {
 		    	// // Get image data
 	            var data = fileManager.contentsAtPath(file)
 	            var img = [[NSImage alloc] initWithData:data]
-	            var imageCollection = [[imageLayer documentData] images]
-	            var imageLayerName = [imageLayer name]
+	            var imageCollection = imageLayer.documentData().images()
+	            var imageLayerName = imageLayer.name()
 
 	            // Update imageLayer with image
 	            var imageData = [imageCollection addImage:img convertColourspace:false]
@@ -130,132 +129,74 @@ function populateScreens(path) {
 	            setTextOnChildLayerByName( screenGroup, "Heading", screenName )
 
 	            // Update page title
-	            // TODO: This should only be done once, really...
-	      //       var artboard = [[[doc currentPage] artboards] firstObject]
-	      //       setTextOnChildLayerByName( artboard, "Section", folder )
+	            if (count === 0) {
+		            var artboard = getCurrentArtboard()
+		            var header = getChildLayerByName(artboard, "Header")
+		            setTextOnChildLayerByName(header, "Section name", sectionName)
 
+	            	page.setName(sectionName)
+		        }
+
+		        // Update the counter
 	            count++
 
 	            // If we're on the third screen, duplicate the page and go through loop again
-	            if( !(count % 3) ) {
+	            if( !(count % numberOfScreensPerPage) ) {
+	            	// Update counters
 	            	count = 0
 	            	pageCount++
 
-	            	print("Start new page")
 	            	// Duplicate page
-	            	duplicateTemplatePage(pageCount)
+	            	page = duplicateTemplatePage(templatePage)
 	            }
 			}
 	    }
     }
-
-	// TODO:
-	// For each folder
-	// 	Get screen
-	//	Find first available slot
-	//	Create new page (if necessary)
-	//	Populate
-
 }
 
-function duplicateTemplatePage(pageCount) {
+function duplicateTemplatePage(templatePage) {
     var newPage = templatePage.copy()
 
     var pages = doc.documentData().pages()
     [pages insertObject:newPage afterObject:doc.currentPage()]
-    newPage.setName(pageCount+"")
     doc.setCurrentPage(newPage)
-}
 
+    return newPage
+}
 
 function populateCover() {
 	print('populateCover')
 }
 
+function removeTemplatePage() {
+	var templatePage = getFirstTemplatePage()
+	var pages = doc.documentData().pages()
+    pages.removeObject(templatePage)
+}
 
 // TODO: Show save dialog
 function saveDocument() {
 
 }
 
+function getCurrentArtboard() {
+	return doc.currentPage().artboards().firstObject()
+}
 
-// Make sure only one layer is selected
-// if ([selection count] == 1) {
-//     var layer = selection[0];
-//     if ([layer class] == [MSBitmapLayer class]) {
-//         // Choose the file to link
-//         var openPanel = [NSOpenPanel openPanel]
-//         [openPanel setCanChooseDirectories:false]
-//         [openPanel setCanChooseFiles:true]
-//         [openPanel setCanCreateDirectories:false]
-
-//         [openPanel setTitle:@"Choose an image"]
-//         [openPanel setPrompt:@"Choose"]
-//         if ([openPanel runModal] == NSOKButton)
-//         {
-//             var path = [openPanel URL]
-//             var data = [[NSFileManager defaultManager] contentsAtPath:path]
-//             var img = [[NSImage alloc] initWithData:data]
-//             var imageCollection = [[layer documentData] images]
-//             var layerName = [layer name]
-
-//             // Update layer with linked image
-//             var imageData = [imageCollection addImage:img convertColourspace:false]
-//             layer.image = imageData
-
-//             // Get folder and filename
-//             path = [path URLByDeletingPathExtension]
-//             var reversedPathComponents = [[[path pathComponents] reverseObjectEnumerator] allObjects];
-//             var folder = [reversedPathComponents objectAtIndex:1]
-//             var filename = [reversedPathComponents objectAtIndex:0]
-
-//             // Get filename components
-//             var screenNumber = [filename componentsSeparatedByString:" "][0]
-//             var screenName = [filename substringFromIndex:screenNumber.length()+1]
-
-//             // Update layer name with filename
-//             layer.name = filename
-
-//             // Update group name
-//             var parent = [layer parentGroup]
-//             parent.name = screenNumber
-
-//             // Update screen number
-//             setTextOnChildLayerByName( parent, "Screen", screenNumber )
-
-//             // Update heading text
-//             setTextOnChildLayerByName( parent, "Heading", screenName )
-
-//             // Update page title
-//             // TODO: This should only be done once, really...
-//             var artboard = [[[doc currentPage] artboards] firstObject]
-//             setTextOnChildLayerByName( artboard, "Section", folder )
-//         }
-//     }
-//     else {
-//         // Display a message
-//         [doc showMessage:"You must select an image to replace"]
-//     }
-// }
-// else {
-//     // Display a message
-//     [doc showMessage:"You must select an image to replace"]
-// }
-
-function setTextOnChildLayerByName( group, name, text ) {
+function setTextOnChildLayerByName(group, name, text) {
     var layer = getChildLayerByName( group, name )
     if ( layer ) {
         layer.setStringValue( text )
-        [layer adjustFrameToFit]
+        layer.adjustFrameToFit()
     }
 }
 
-function getChildLayerByName( group, name ) {
+function getChildLayerByName(group, name) {
     var layers = group.layers()
     var layerLoop = [[layers array] objectEnumerator]
 
-    while (childLayer = [layerLoop nextObject]) {
-        if( [childLayer name] == name) {
+    while (childLayer = layerLoop.nextObject()) {
+        if( childLayer.name() == name) {
             return childLayer;
         }
     }
