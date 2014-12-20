@@ -1,0 +1,81 @@
+// Export for User Flows (control shift e)
+
+// The name of the User Flow Description text layer
+var userFlowDescriptionLayerName = "User Flow Description"
+// The file extension to export the images with
+var fileExtension = ".png"
+// The filename to use for the descriptions file
+var descriptionsFilename = "descriptions.json"
+
+// Ask the user where they want to export to
+var openPanel = NSOpenPanel.openPanel()
+openPanel.setCanChooseDirectories(true)
+openPanel.setCanChooseFiles(false)
+openPanel.setCanCreateDirectories(true)
+openPanel.setTitle("Choose an folder to export to...")
+openPanel.setPrompt("Export")
+if (openPanel.runModal() == NSOKButton) {
+    // Get the url of the folder the user selected
+    var exportBaseUrl = openPanel.URL()
+
+    // Create an object to store descriptions in
+    var descriptions = {}
+
+    // Loop through all the pages
+    var pageLoop = doc.pages().objectEnumerator()
+    while (page = pageLoop.nextObject()) {
+        // Create an object to store the descriptions for each artboard in this page, using the page name as the key
+        descriptions[page.name()] = {}
+
+        // Switch to this pag to avoid errors when exporting
+        doc.setCurrentPage(page)
+
+        // Setup the URL for the page
+        var pageDirectoryUrl = [exportBaseUrl URLByAppendingPathComponent:page.name() isDirectory:true]
+
+        // Create the directory for this page to export to
+        [[NSFileManager defaultManager] createDirectoryAtURL:pageDirectoryUrl withIntermediateDirectories:false attributes:null error:null]
+
+        // Export each of this pages artboards to the page directory
+        var artboardLoop = page.artboards().objectEnumerator()
+        while (artboard = artboardLoop.nextObject()) {
+            // Check that it's an artboard and not a slice
+            if (artboard.class() == MSArtboardGroup.class()) {
+                // Export the artboard to the correct file location
+                var artboardPath = pageDirectoryUrl.URLByAppendingPathComponent(artboard.name() + fileExtension).path()
+                [doc saveArtboardOrSlice:artboard toFile:artboardPath];
+
+                // Get the user flow description text layer, if there is one
+                var artboardDescription = null
+                var possibleDescriptionLayer = getChildLayerByName(artboard, userFlowDescriptionLayerName)
+                if (possibleDescriptionLayer) {
+                    artboardDescription = new String(possibleDescriptionLayer.stringValue())
+                }
+
+                // Put the artboard description in the descriptions object
+                descriptions[page.name()][artboard.name()] = artboardDescription
+            }
+        }
+    }
+
+    // Convert the descrptions object to JSON
+    var descriptionsJSON = JSON.stringify(descriptions)
+    var descriptionsJSONData = @descriptionsJSON.dataUsingEncoding(NSUTF8StringEncoding))
+
+    // Save the descriptions to a JSON file
+    var descriptionsFilePath = exportBaseUrl.URLByAppendingPathComponent(descriptionsFilename).path()
+    [[NSFileManager defaultManager] createFileAtPath:descriptionsFilePath contents:descriptionsJSONData attributes:nil]
+}
+
+// A a layer inside the given layer group which has the name
+function getChildLayerByName(group, name) {
+    var layers = group.layers()
+    var layerLoop = layers.array().objectEnumerator()
+    while (childLayer = layerLoop.nextObject()) {
+        if (childLayer.name() == name) {
+            return childLayer;
+        }
+    }
+
+    return false;
+}
