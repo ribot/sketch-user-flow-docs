@@ -107,9 +107,7 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, description
 	            var screenName = filename.substringFromIndex(screenNumber.length()+1)
 
 		    	// Get correct screen group
-		    	// TODO: Only do this once per page
 				var templateScreens = getTemplateScreens()
-		    	print( count )
 				var screenGroup = templateScreens.layers().array()[count]
 
 		    	// Get image layer
@@ -117,7 +115,7 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, description
 
 		    	// // Get image data
 	            var data = fileManager.contentsAtPath(file)
-	            var img = [[NSImage alloc] initWithData:data]
+	            var img = NSImage.alloc().initWithData(data)
 	            var imageCollection = imageLayer.documentData().images()
 	            var imageLayerName = imageLayer.name()
 
@@ -205,7 +203,7 @@ function setTextOnChildLayerByName(group, name, text) {
 
 function getChildLayerByName(group, name) {
     var layers = group.layers()
-    var layerLoop = [[layers array] objectEnumerator]
+    var layerLoop = layers.array().objectEnumerator()
 
     while (childLayer = layerLoop.nextObject()) {
         if( childLayer.name() == name) {
