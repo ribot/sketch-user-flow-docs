@@ -76,109 +76,116 @@ function getFirstTemplatePage() {
 
 // Populate screens
 function populateScreens(path, templatePage, numberOfScreensPerPage, descriptions) {
-	// Duplicate Templates page to start
-	var pageCount = 0
-	var page = duplicateTemplatePage(templatePage)
-
 	var fileManager = NSFileManager.defaultManager()
     var folders = fileManager.shallowSubpathsOfDirectoryAtURL(path)
 
 	// Loop through folders
 	var folderLoop = folders.objectEnumerator()
     while (folder = folderLoop.nextObject()) {
-    	// Get folder name (for page title)
-        var sectionName = folder.lastPathComponent()
+    	// Check if it's a folder and if shouldIgnoreItem should be ignored
+    	if(!shouldIgnoreItem(folder) && folder.pathExtension() == "") {
+			// Duplicate Templates page to start
+			var pageCount = 0
+			var page = duplicateTemplatePage(templatePage)
 
-    	// Loop through files
-    	var files = fileManager.shallowSubpathsOfDirectoryAtURL(folder)
-    	var numberOfFilesInFolder = files.length()
-    	var screensInSectionCount = 0
-		var screenCount = 0
+	    	// Get folder name (for page title)
+	        var sectionName = folder.lastPathComponent()
 
-		var fileLoop = files.objectEnumerator()
-	    while (file = fileLoop.nextObject()) {
+	    	// Loop through files
+	    	var files = fileManager.shallowSubpathsOfDirectoryAtURL(folder)
+	    	var numberOfFilesInFolder = files.length()
+	    	var screensInSectionCount = 0
+			var screenCount = 0
 
-            // Get filename and components
-	        var filename = file.lastPathComponent().stringByDeletingPathExtension()
+			var fileLoop = files.objectEnumerator()
+		    while (file = fileLoop.nextObject()) {
 
-	        if(filename.hasPrefix("_")) {
-	        	// If we're not displaying a file, remove it from the numberOfFilesInFolder
-	        	numberOfFilesInFolder--
-	        } else {
-	            var screenNumber = filename.componentsSeparatedByString(" ")[0]
-	            var screenName = filename.substringFromIndex(screenNumber.length()+1)
+	            // Get filename and components
+		        var filename = file.lastPathComponent().stringByDeletingPathExtension()
+		        print(sectionName + ' - ' + filename)
 
-		    	// Get correct screen group
-				var templateScreens = getTemplateScreens()
-				var screenGroup = templateScreens.layers().array()[screenCount]
+		        if(shouldIgnoreItem(filename)) {
+		        	// If we're not displaying a file, remove it from the numberOfFilesInFolder
+		        	numberOfFilesInFolder--
+		        } else {
+		            var screenNumber = filename.componentsSeparatedByString(" ")[0]
+		            var screenName = filename.substringFromIndex(screenNumber.length()+1)
 
-		    	// Get image layer
-		    	var imageLayer = getChildLayerByName(screenGroup, "Placeholder")
+			    	// Get correct screen group
+					var templateScreens = getTemplateScreens()
+					var screenGroup = templateScreens.layers().array()[screenCount]
 
-		    	// // Get image data
-	            var data = fileManager.contentsAtPath(file)
-	            var img = NSImage.alloc().initWithData(data)
-	            var imageCollection = imageLayer.documentData().images()
-	            var imageLayerName = imageLayer.name()
+			    	// Get image layer
+			    	var imageLayer = getChildLayerByName(screenGroup, "Placeholder")
 
-	            // Update imageLayer with image
-	            var imageData = [imageCollection addImage:img convertColourspace:false]
-	            imageLayer.image = imageData
+			    	// // Get image data
+		            var data = fileManager.contentsAtPath(file)
+		            var img = NSImage.alloc().initWithData(data)
+		            var imageCollection = imageLayer.documentData().images()
+		            var imageLayerName = imageLayer.name()
 
-	            // Update screen number
-	            setTextOnChildLayerByName( screenGroup, "Number", screenNumber )
+		            // Update imageLayer with image
+		            var imageData = [imageCollection addImage:img convertColourspace:false]
+		            imageLayer.image = imageData
 
-	            // Update heading text
-	            setTextOnChildLayerByName( screenGroup, "Heading", screenName )
+		            // Update screen number
+		            setTextOnChildLayerByName( screenGroup, "Number", screenNumber )
 
-	            // Update description
-                var descriptionsJSON = JSON.parse(descriptions)
-			    var description = descriptionsJSON[sectionName][filename]
+		            // Update heading text
+		            setTextOnChildLayerByName( screenGroup, "Heading", screenName )
 
-			    if (typeof description != 'string') {
-			    	description = ""
-			    }
-	            setTextOnChildLayerByName( screenGroup, "Description", description )
+		            // Update description
+	                var descriptionsJSON = JSON.parse(descriptions)
+				    var description = descriptionsJSON[sectionName][filename]
 
-	            // If it's the first screen on a page, update page title
-	            if (screenCount === 0) {
-		            var header = getChildLayerByName(getFirstArtboard(), "Header")
-		            setTextOnChildLayerByName(header, "Section name", sectionName)
+				    if (typeof description != 'string') {
+				    	description = ""
+				    }
+		            setTextOnChildLayerByName( screenGroup, "Description", description )
 
-	            	page.setName(sectionName)
-		        }
+		            // If it's the first screen on a page, update page title
+		            if (screenCount === 0) {
+			            var header = getChildLayerByName(getFirstArtboard(), "Header")
+			            setTextOnChildLayerByName(header, "Section name", sectionName)
 
-		        // Update the screenCount
-	            screenCount++
-	            screensInSectionCount++
-			}
+		            	page.setName(sectionName)
+			        }
 
-			var haveRunOutOfScreensForSection = (screensInSectionCount == numberOfFilesInFolder)
-			var haveRunOutOfSlotsForPage = !(screenCount % numberOfScreensPerPage)
-
-            // If we've run out of screens in this section, remove any unnecessary ones
-            if (haveRunOutOfScreensForSection) {
-            	// Work out how many slots left
-				var slotsLeft = numberOfScreensPerPage - (screenCount % numberOfScreensPerPage)
-
-				// Remove empty slots
-	            var screens = getChildLayerByName(getFirstArtboard(), "Screens")
-				for (var j=0; j<slotsLeft; j++) {
-					screens.removeLayer(screens.lastLayer())
+			        // Update the screenCount
+		            screenCount++
+		            screensInSectionCount++
 				}
-            }
 
-            // If we've run out of screens in this section OR we're on the third screen, duplicate the page and go through loop again
-            if(haveRunOutOfScreensForSection || haveRunOutOfSlotsForPage) {
-            	// Update counts
-            	screenCount = 0
-            	pageCount++
+	            // If we've run out of screens in this section, remove any unnecessary ones
+				var haveRunOutOfScreensForSection = (screensInSectionCount == numberOfFilesInFolder)
+	            if (haveRunOutOfScreensForSection) {
+	            	// Work out how many slots left
+					var slotsLeft = numberOfScreensPerPage - (screenCount % numberOfScreensPerPage)
 
-            	// Duplicate page
-            	page = duplicateTemplatePage(templatePage)
-            }
-	    }
+					// Remove empty slots
+		            var screens = getChildLayerByName(getFirstArtboard(), "Screens")
+					for (var j=0; j<slotsLeft; j++) {
+						screens.removeLayer(screens.lastLayer())
+					}
+	            }
+
+	            // If we've run out of screens in this section OR we're on the third screen, duplicate the page and go through loop again
+				var haveRunOutOfSlotsForPage = !(screenCount % numberOfScreensPerPage)
+	            if (haveRunOutOfSlotsForPage) {
+	            	// Update counts
+	            	screenCount = 0
+	            	pageCount++
+
+	            	// Duplicate page
+	            	page = duplicateTemplatePage(templatePage)
+	            }
+		    }
+		}
     }
+}
+
+function shouldIgnoreItem(path) {
+	return path.lastPathComponent().hasPrefix("_")
 }
 
 function duplicateTemplatePage(templatePage) {
@@ -197,7 +204,9 @@ function populateCover() {
 
 function removeTemplatePage() {
 	var templatePage = getFirstTemplatePage()
-	var pages = doc.documentData().pages()
+	var pages = doc.pages()
+	print(templatePage)
+	print(pages)
     pages.removeObject(templatePage)
 }
 

@@ -17,12 +17,11 @@ Tested on Sketch 3.2.1
 
 ## Export for User Flows:
 - Ask user for project name
-- Add (hidden) project name to first(?) page
+- Add (hidden) project name to meta page
 
 ## Populate User Flows:
 - Update version and project name on cover page
 - Update project name on screen pages
-- Remove spare slots
 
 # Licence
 ```
