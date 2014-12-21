@@ -20,7 +20,6 @@ Tested on Sketch 3.2.1
 - Add (hidden) project name to first(?) page
 
 ## Populate User Flows:
-- Add descriptions
 - Update version and project name on cover page
 - Update project name on screen pages
 - Remove spare slots

@@ -55,12 +55,9 @@ function getScreensPerPageFromTemplate(templatePage) {
 }
 
 
+// Get the 'Screens' group
 function getTemplateScreens() {
-    // Get first (and only) artboard
-    var artboard = getCurrentArtboard()
-
-    // Get the 'Screens' group
-    return getChildLayerByName(artboard, 'Screens')
+    return getChildLayerByName(getFirstArtboard(), 'Screens')
 }
 
 function getFirstTemplatePage() {
@@ -86,7 +83,6 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, description
 	var fileManager = NSFileManager.defaultManager()
     var folders = fileManager.shallowSubpathsOfDirectoryAtURL(path)
 
-
 	// Loop through folders
 	var folderLoop = folders.objectEnumerator()
     while (folder = folderLoop.nextObject()) {
@@ -95,20 +91,26 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, description
 
     	// Loop through files
     	var files = fileManager.shallowSubpathsOfDirectoryAtURL(folder)
+    	var numberOfFilesInFolder = files.length()
+    	var screensInSectionCount = 0
+		var screenCount = 0
+
 		var fileLoop = files.objectEnumerator()
-		var count = 0
 	    while (file = fileLoop.nextObject()) {
 
             // Get filename and components
 	        var filename = file.lastPathComponent().stringByDeletingPathExtension()
 
-	    	if(!filename.hasPrefix("_")) {
+	        if(filename.hasPrefix("_")) {
+	        	// If we're not displaying a file, remove it from the numberOfFilesInFolder
+	        	numberOfFilesInFolder--
+	        } else {
 	            var screenNumber = filename.componentsSeparatedByString(" ")[0]
 	            var screenName = filename.substringFromIndex(screenNumber.length()+1)
 
 		    	// Get correct screen group
 				var templateScreens = getTemplateScreens()
-				var screenGroup = templateScreens.layers().array()[count]
+				var screenGroup = templateScreens.layers().array()[screenCount]
 
 		    	// Get image layer
 		    	var imageLayer = getChildLayerByName(screenGroup, "Placeholder")
@@ -138,28 +140,43 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, description
 			    }
 	            setTextOnChildLayerByName( screenGroup, "Description", description )
 
-	            // Update page title
-	            if (count === 0) {
-		            var artboard = getCurrentArtboard()
-		            var header = getChildLayerByName(artboard, "Header")
+	            // If it's the first screen on a page, update page title
+	            if (screenCount === 0) {
+		            var header = getChildLayerByName(getFirstArtboard(), "Header")
 		            setTextOnChildLayerByName(header, "Section name", sectionName)
 
 	            	page.setName(sectionName)
 		        }
 
-		        // Update the counter
-	            count++
-
-	            // If we're on the third screen, duplicate the page and go through loop again
-	            if( !(count % numberOfScreensPerPage) ) {
-	            	// Update counters
-	            	count = 0
-	            	pageCount++
-
-	            	// Duplicate page
-	            	page = duplicateTemplatePage(templatePage)
-	            }
+		        // Update the screenCount
+	            screenCount++
+	            screensInSectionCount++
 			}
+
+			var haveRunOutOfScreensForSection = (screensInSectionCount == numberOfFilesInFolder)
+			var haveRunOutOfSlotsForPage = !(screenCount % numberOfScreensPerPage)
+
+            // If we've run out of screens in this section, remove any unnecessary ones
+            if (haveRunOutOfScreensForSection) {
+            	// Work out how many slots left
+				var slotsLeft = numberOfScreensPerPage - (screenCount % numberOfScreensPerPage)
+
+				// Remove empty slots
+	            var screens = getChildLayerByName(getFirstArtboard(), "Screens")
+				for (var j=0; j<slotsLeft; j++) {
+					screens.removeLayer(screens.lastLayer())
+				}
+            }
+
+            // If we've run out of screens in this section OR we're on the third screen, duplicate the page and go through loop again
+            if(haveRunOutOfScreensForSection || haveRunOutOfSlotsForPage) {
+            	// Update counts
+            	screenCount = 0
+            	pageCount++
+
+            	// Duplicate page
+            	page = duplicateTemplatePage(templatePage)
+            }
 	    }
     }
 }
@@ -189,7 +206,7 @@ function finish() {
 	doc.showMessage( "All done!" );
 }
 
-function getCurrentArtboard() {
+function getFirstArtboard() {
 	return doc.currentPage().artboards().firstObject()
 }
 
