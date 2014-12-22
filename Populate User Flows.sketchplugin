@@ -12,17 +12,21 @@ function init() {
 	var metadataString = [NSString stringWithContentsOfURL:metadataFilePath encoding:NSUTF8StringEncoding error:null]
     var metadata = JSON.parse(metadataString)
 
-	// Select first template page
-	var templatePage = getFirstTemplatePage()
+    // Get the project name from the metadata
+    var projectName = metadata[projectNameJSONKey]
+    // Get the descriptions from the metadata
+    var descriptions = metadata[descriptionsJSONKey]
 
+	// Select first template page
+	var templatePage = getPageByName(templatePageName)
 	// Get number of screens per page
 	var numberOfScreensPerPage = getScreensPerPageFromTemplate(templatePage)
 
 	// Populate cover
-	populateCover()
+	populateCover(projectName)
 
 	// Populate screens
-	populateScreens(path, templatePage, numberOfScreensPerPage, metadata[projectNameJSONKey], metadata[descriptionsJSONKey])
+	populateScreens(path, templatePage, numberOfScreensPerPage, projectName, descriptions)
 
 	// Remove template
 	removeTemplatePage()
@@ -63,12 +67,12 @@ function getTemplateScreens() {
     return getChildLayerByName(getFirstArtboard(), screensLayerGroupName)
 }
 
-function getFirstTemplatePage() {
+function getPageByName(pageName) {
 	var pages = doc.pages()
 	var pageLoop = pages.objectEnumerator()
 
     while (page = pageLoop.nextObject()) {
-        if( page.name() == templatePageName) {
+        if (page.name() == pageName) {
             return page
         }
     }
@@ -201,12 +205,19 @@ function duplicateTemplatePage(templatePage) {
     return newPage
 }
 
-function populateCover() {
-	print('populateCover')
+function populateCover(projectName) {
+    // Get the cover page and it's artboard
+    var coverPage = getPageByName(coverPageName)
+    var coverArtboard = coverPage.artboards().firstObject()
+
+    // Set the project name
+    setTextOnChildLayerByName(coverArtboard, coverProjectNameLayerName, projectName)
+
+    // TODO: Update the version number
 }
 
 function removeTemplatePage() {
-	var templatePage = getFirstTemplatePage()
+	var templatePage = getPageByName(templatePageName)
 	var pages = doc.pages()
 	print(templatePage)
 	print(pages)
