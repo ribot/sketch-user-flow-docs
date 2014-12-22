@@ -59,9 +59,12 @@ if (openPanel.runModal() == NSOKButton) {
     // Ask the user for the name of the project
     // TODO: Guess the project name based on the Sketch filename
     var projectName = [doc askForUserInput:"What is this project called?" initialValue:""]
-
-    // Put the project name in the JSON object
     jsonObject[projectNameJSONKey] = new String(projectName)
+
+    // Ask the user for the verson of the document
+    // TODO: Guess the project name based on the Sketch filename
+    var documentVersion = [doc askForUserInput:"What version of the document is this?" initialValue:""]
+    jsonObject[documentVersionJSONKey] = new String(documentVersion)
 
     // Convert the descrptions object to JSON
     var jsonString = JSON.stringify(jsonObject)

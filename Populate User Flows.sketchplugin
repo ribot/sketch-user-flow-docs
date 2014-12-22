@@ -14,6 +14,8 @@ function init() {
 
     // Get the project name from the metadata
     var projectName = metadata[projectNameJSONKey]
+    // Get the document version from the metadata
+    var documentVersion = metadata[documentVersionJSONKey]
     // Get the descriptions from the metadata
     var descriptions = metadata[descriptionsJSONKey]
 
@@ -23,7 +25,7 @@ function init() {
 	var numberOfScreensPerPage = getScreensPerPageFromTemplate(templatePage)
 
 	// Populate cover
-	populateCover(projectName)
+	populateCover(projectName, documentVersion)
 
 	// Populate screens
 	populateScreens(path, templatePage, numberOfScreensPerPage, projectName, descriptions)
@@ -205,15 +207,19 @@ function duplicateTemplatePage(templatePage) {
     return newPage
 }
 
-function populateCover(projectName) {
+function populateCover(projectName, documentVersion) {
     // Get the cover page and it's artboard
     var coverPage = getPageByName(coverPageName)
     var coverArtboard = coverPage.artboards().firstObject()
 
+    // Get the cover header
+    // TODO: Remove the need to get the header by doing a deep search for layers in the page
+    var coverHeader = getChildLayerByName(coverArtboard, coverHeaderLayerGroupName)
+
     // Set the project name
     setTextOnChildLayerByName(coverArtboard, coverProjectNameLayerName, projectName)
-
-    // TODO: Update the version number
+    // Set the version number
+    setTextOnChildLayerByName(coverHeader, coverDocumentVersionLayerName, documentVersion)
 }
 
 function removeTemplatePage() {
