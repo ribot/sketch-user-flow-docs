@@ -5,7 +5,11 @@ var userFlowDescriptionLayerName = "User Flow Description"
 // The file extension to export the images with
 var fileExtension = ".png"
 // The filename to use for the descriptions file
-var descriptionsFilename = "descriptions.json"
+var descriptionsFilename = "user_flows.json"
+// The key used to reference the descriptions in the JSON file
+var descriptionsJSONKey = "descriptions"
+// The key used to reference the project name in the JSON file
+var projectNameJSONKey = "projectName"
 
 // Ask the user where they want to export to
 var openPanel = NSOpenPanel.openPanel()
@@ -18,8 +22,11 @@ if (openPanel.runModal() == NSOKButton) {
     // Get the url of the folder the user selected
     var exportBaseUrl = openPanel.URL()
 
+    // Create an object to store the JSON data in
+    var jsonObject = {}
     // Create an object to store descriptions in
-    var descriptions = {}
+    jsonObject[descriptionsJSONKey] = {}
+    var descriptions = jsonObject[descriptionsJSONKey]
 
     // Loop through all the pages
     var pageLoop = doc.pages().objectEnumerator()
@@ -58,13 +65,20 @@ if (openPanel.runModal() == NSOKButton) {
         }
     }
 
+    // Ask the user for the name of the project
+    // TODO: Guess the project name based on the Sketch filename
+    var projectName = [doc askForUserInput:"What is this project called?" initialValue:""]
+
+    // Put the project name in the JSON object
+    jsonObject[projectNameJSONKey] = new String(projectName)
+
     // Convert the descrptions object to JSON
-    var descriptionsJSON = JSON.stringify(descriptions)
-    var descriptionsJSONData = @descriptionsJSON.dataUsingEncoding(NSUTF8StringEncoding))
+    var jsonString = JSON.stringify(jsonObject)
+    var jsonData = @jsonString.dataUsingEncoding(NSUTF8StringEncoding))
 
     // Save the descriptions to a JSON file
     var descriptionsFilePath = exportBaseUrl.URLByAppendingPathComponent(descriptionsFilename).path()
-    [[NSFileManager defaultManager] createFileAtPath:descriptionsFilePath contents:descriptionsJSONData attributes:nil]
+    [[NSFileManager defaultManager] createFileAtPath:descriptionsFilePath contents:jsonData attributes:nil]
 }
 
 // A a layer inside the given layer group which has the name
