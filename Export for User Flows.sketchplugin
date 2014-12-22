@@ -68,8 +68,8 @@ if (openPanel.runModal() == NSOKButton) {
     var jsonData = @jsonString.dataUsingEncoding(NSUTF8StringEncoding))
 
     // Save the descriptions to a JSON file
-    var descriptionsFilePath = exportBaseUrl.URLByAppendingPathComponent(descriptionsFilename).path()
-    [[NSFileManager defaultManager] createFileAtPath:descriptionsFilePath contents:jsonData attributes:nil]
+    var metadataFilePath = exportBaseUrl.URLByAppendingPathComponent(metadataFilename).path()
+    [[NSFileManager defaultManager] createFileAtPath:metadataFilePath contents:jsonData attributes:nil]
 }
 
 // A a layer inside the given layer group which has the name

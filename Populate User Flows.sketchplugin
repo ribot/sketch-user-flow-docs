@@ -1,13 +1,16 @@
 // Populate User Flows (command control p)
 
+#import 'lib/constants.js'
+
 init()
 
 function init() {
 	var path = getExportsFolder()
 
-	// Get descriptions from descriptions.json
-	var pathToDescriptionsJson = path.URLByAppendingPathComponent('descriptions.json')
-	var descriptions = [NSString stringWithContentsOfURL:pathToDescriptionsJson encoding:NSUTF8StringEncoding error:null]
+	// Get metadata into a JSON object
+	var metadataFilePath = path.URLByAppendingPathComponent(metadataFilename)
+	var metadataString = [NSString stringWithContentsOfURL:metadataFilePath encoding:NSUTF8StringEncoding error:null]
+    var metadata = JSON.parse(metadataString)
 
 	// Select first template page
 	var templatePage = getFirstTemplatePage()
@@ -19,7 +22,7 @@ function init() {
 	populateCover()
 
 	// Populate screens
-	populateScreens(path, templatePage, numberOfScreensPerPage, descriptions)
+	populateScreens(path, templatePage, numberOfScreensPerPage, metadata[descriptionsJSONKey])
 
 	// Remove template
 	removeTemplatePage()
@@ -135,8 +138,7 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, description
 		            setTextOnChildLayerByName( screenGroup, "Heading", screenName )
 
 		            // Update description
-	                var descriptionsJSON = JSON.parse(descriptions)
-				    var description = descriptionsJSON[sectionName][filename]
+				    var description = descriptions[sectionName][filename]
 
 				    if (typeof description != 'string') {
 				    	description = ""
