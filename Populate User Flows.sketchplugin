@@ -22,7 +22,7 @@ function init() {
 	populateCover()
 
 	// Populate screens
-	populateScreens(path, templatePage, numberOfScreensPerPage, metadata[descriptionsJSONKey])
+	populateScreens(path, templatePage, numberOfScreensPerPage, metadata[projectNameJSONKey], metadata[descriptionsJSONKey])
 
 	// Remove template
 	removeTemplatePage()
@@ -51,7 +51,7 @@ function getScreensPerPageFromTemplate(templatePage) {
     var artboard = templatePage.artboards().firstObject()
 
 	// Get Screens group
-	var screens = getChildLayerByName(artboard, 'Screens')
+	var screens = getChildLayerByName(artboard, screensLayerGroupName)
 
     // Get number of children in Screens group
     return screens.layers().length()
@@ -60,7 +60,7 @@ function getScreensPerPageFromTemplate(templatePage) {
 
 // Get the 'Screens' group
 function getTemplateScreens() {
-    return getChildLayerByName(getFirstArtboard(), 'Screens')
+    return getChildLayerByName(getFirstArtboard(), screensLayerGroupName)
 }
 
 function getFirstTemplatePage() {
@@ -68,7 +68,7 @@ function getFirstTemplatePage() {
 	var pageLoop = pages.objectEnumerator()
 
     while (page = pageLoop.nextObject()) {
-        if( page.name() == 'Template') {
+        if( page.name() == templatePageName) {
             return page
         }
     }
@@ -78,7 +78,7 @@ function getFirstTemplatePage() {
 
 
 // Populate screens
-function populateScreens(path, templatePage, numberOfScreensPerPage, descriptions) {
+function populateScreens(path, templatePage, numberOfScreensPerPage, projectName, descriptions) {
 	var fileManager = NSFileManager.defaultManager()
     var folders = fileManager.shallowSubpathsOfDirectoryAtURL(path)
 
@@ -119,7 +119,7 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, description
 					var screenGroup = templateScreens.layers().array()[screenCount]
 
 			    	// Get image layer
-			    	var imageLayer = getChildLayerByName(screenGroup, "Placeholder")
+			    	var imageLayer = getChildLayerByName(screenGroup, screenPlaceholderLayerName)
 
 			    	// // Get image data
 		            var data = fileManager.contentsAtPath(file)
@@ -132,10 +132,10 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, description
 		            imageLayer.image = imageData
 
 		            // Update screen number
-		            setTextOnChildLayerByName( screenGroup, "Number", screenNumber )
+		            setTextOnChildLayerByName( screenGroup, screenNumberLayerName, screenNumber )
 
 		            // Update heading text
-		            setTextOnChildLayerByName( screenGroup, "Heading", screenName )
+		            setTextOnChildLayerByName( screenGroup, screenHeadingLayerName, screenName )
 
 		            // Update description
 				    var description = descriptions[sectionName][filename]
@@ -143,12 +143,13 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, description
 				    if (typeof description != 'string') {
 				    	description = ""
 				    }
-		            setTextOnChildLayerByName( screenGroup, "Description", description )
+		            setTextOnChildLayerByName( screenGroup, screenDescriptionLayerName, description )
 
 		            // If it's the first screen on a page, update page title
 		            if (screenCount === 0) {
-			            var header = getChildLayerByName(getFirstArtboard(), "Header")
-			            setTextOnChildLayerByName(header, "Section name", sectionName)
+			            var header = getChildLayerByName(getFirstArtboard(), headerLayerName)
+                        setTextOnChildLayerByName(header, projectNameLayerName, projectName)
+                        setTextOnChildLayerByName(header, sectionNameLayerName, sectionName)
 
 		            	page.setName(sectionName)
 			        }
@@ -165,7 +166,7 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, description
 					var slotsLeft = numberOfScreensPerPage - (screenCount % numberOfScreensPerPage)
 
 					// Remove empty slots
-		            var screens = getChildLayerByName(getFirstArtboard(), "Screens")
+		            var screens = getChildLayerByName(getFirstArtboard(), screensLayerGroupName)
 					for (var j=0; j<slotsLeft; j++) {
 						screens.removeLayer(screens.lastLayer())
 					}
