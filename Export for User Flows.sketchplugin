@@ -57,13 +57,11 @@ if (openPanel.runModal() == NSOKButton) {
     }
 
     // Ask the user for the name of the project
-    // TODO: Guess the project name based on the Sketch filename
-    var projectName = [doc askForUserInput:"What is this project called?" initialValue:""]
+    var projectName = [doc askForUserInput:"What is this project called?" initialValue:guessProjectName()]
     jsonObject[projectNameJSONKey] = new String(projectName)
 
     // Ask the user for the verson of the document
-    // TODO: Guess the project name based on the Sketch filename
-    var documentVersion = [doc askForUserInput:"What version of the document is this?" initialValue:""]
+    var documentVersion = [doc askForUserInput:"What version of the document is this?" initialValue:guessDocumentVersion()]
     jsonObject[documentVersionJSONKey] = new String(documentVersion)
 
     // Convert the descrptions object to JSON
@@ -73,6 +71,19 @@ if (openPanel.runModal() == NSOKButton) {
     // Save the descriptions to a JSON file
     var metadataFilePath = exportBaseUrl.URLByAppendingPathComponent(metadataFilename).path()
     [[NSFileManager defaultManager] createFileAtPath:metadataFilePath contents:jsonData attributes:nil]
+}
+
+function guessProjectName() {
+    return getFilenameWithoutExtension().componentsSeparatedByString("_").firstObject()
+}
+
+function guessDocumentVersion() {
+    return "Version " + getFilenameWithoutExtension().componentsSeparatedByString("_").lastObject()
+}
+
+function getFilenameWithoutExtension() {
+    var filename = doc.fileURL().lastPathComponent()
+    return [filename stringByReplacingOccurrencesOfString:".sketch" withString:""]
 }
 
 // A a layer inside the given layer group which has the name
