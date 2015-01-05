@@ -1,11 +1,6 @@
 // Export for User Flows (control shift e)
 
-// The name of the User Flow Description text layer
-var userFlowDescriptionLayerName = "User Flow Description"
-// The file extension to export the images with
-var fileExtension = ".png"
-// The filename to use for the descriptions file
-var descriptionsFilename = "descriptions.json"
+#import 'lib/constants.js'
 
 // Ask the user where they want to export to
 var openPanel = NSOpenPanel.openPanel()
@@ -18,8 +13,11 @@ if (openPanel.runModal() == NSOKButton) {
     // Get the url of the folder the user selected
     var exportBaseUrl = openPanel.URL()
 
+    // Create an object to store the JSON data in
+    var jsonObject = {}
     // Create an object to store descriptions in
-    var descriptions = {}
+    jsonObject[descriptionsJSONKey] = {}
+    var descriptions = jsonObject[descriptionsJSONKey]
 
     // Loop through all the pages
     var pageLoop = doc.pages().objectEnumerator()
@@ -58,13 +56,34 @@ if (openPanel.runModal() == NSOKButton) {
         }
     }
 
+    // Ask the user for the name of the project
+    var projectName = [doc askForUserInput:"What is this project called?" initialValue:guessProjectName()]
+    jsonObject[projectNameJSONKey] = new String(projectName)
+
+    // Ask the user for the verson of the document
+    var documentVersion = [doc askForUserInput:"What version of the document is this?" initialValue:guessDocumentVersion()]
+    jsonObject[documentVersionJSONKey] = new String(documentVersion)
+
     // Convert the descrptions object to JSON
-    var descriptionsJSON = JSON.stringify(descriptions)
-    var descriptionsJSONData = @descriptionsJSON.dataUsingEncoding(NSUTF8StringEncoding))
+    var jsonString = JSON.stringify(jsonObject)
+    var jsonData = @jsonString.dataUsingEncoding(NSUTF8StringEncoding))
 
     // Save the descriptions to a JSON file
-    var descriptionsFilePath = exportBaseUrl.URLByAppendingPathComponent(descriptionsFilename).path()
-    [[NSFileManager defaultManager] createFileAtPath:descriptionsFilePath contents:descriptionsJSONData attributes:nil]
+    var metadataFilePath = exportBaseUrl.URLByAppendingPathComponent(metadataFilename).path()
+    [[NSFileManager defaultManager] createFileAtPath:metadataFilePath contents:jsonData attributes:nil]
+}
+
+function guessProjectName() {
+    return getFilenameWithoutExtension().componentsSeparatedByString("_").firstObject()
+}
+
+function guessDocumentVersion() {
+    return "Version " + getFilenameWithoutExtension().componentsSeparatedByString("_").lastObject()
+}
+
+function getFilenameWithoutExtension() {
+    var filename = doc.fileURL().lastPathComponent()
+    return [filename stringByReplacingOccurrencesOfString:".sketch" withString:""]
 }
 
 // A a layer inside the given layer group which has the name

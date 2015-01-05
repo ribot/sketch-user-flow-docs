@@ -1,25 +1,34 @@
 // Populate User Flows (command control p)
 
+#import 'lib/constants.js'
+
 init()
 
 function init() {
 	var path = getExportsFolder()
 
-	// Get descriptions from descriptions.json
-	var pathToDescriptionsJson = path.URLByAppendingPathComponent('descriptions.json')
-	var descriptions = [NSString stringWithContentsOfURL:pathToDescriptionsJson encoding:NSUTF8StringEncoding error:null]
+	// Get metadata into a JSON object
+	var metadataFilePath = path.URLByAppendingPathComponent(metadataFilename)
+	var metadataString = [NSString stringWithContentsOfURL:metadataFilePath encoding:NSUTF8StringEncoding error:null]
+    var metadata = JSON.parse(metadataString)
+
+    // Get the project name from the metadata
+    var projectName = metadata[projectNameJSONKey]
+    // Get the document version from the metadata
+    var documentVersion = metadata[documentVersionJSONKey]
+    // Get the descriptions from the metadata
+    var descriptions = metadata[descriptionsJSONKey]
 
 	// Select first template page
-	var templatePage = getFirstTemplatePage()
-
+	var templatePage = getPageByName(templatePageName)
 	// Get number of screens per page
 	var numberOfScreensPerPage = getScreensPerPageFromTemplate(templatePage)
 
 	// Populate cover
-	populateCover()
+	populateCover(projectName, documentVersion)
 
 	// Populate screens
-	populateScreens(path, templatePage, numberOfScreensPerPage, descriptions)
+	populateScreens(path, templatePage, numberOfScreensPerPage, projectName, descriptions)
 
 	// Remove template
 	removeTemplatePage()
@@ -48,7 +57,7 @@ function getScreensPerPageFromTemplate(templatePage) {
     var artboard = templatePage.artboards().firstObject()
 
 	// Get Screens group
-	var screens = getChildLayerByName(artboard, 'Screens')
+	var screens = getChildLayerByName(artboard, screensLayerGroupName)
 
     // Get number of children in Screens group
     return screens.layers().length()
@@ -57,15 +66,15 @@ function getScreensPerPageFromTemplate(templatePage) {
 
 // Get the 'Screens' group
 function getTemplateScreens() {
-    return getChildLayerByName(getFirstArtboard(), 'Screens')
+    return getChildLayerByName(getFirstArtboard(), screensLayerGroupName)
 }
 
-function getFirstTemplatePage() {
+function getPageByName(pageName) {
 	var pages = doc.pages()
 	var pageLoop = pages.objectEnumerator()
 
     while (page = pageLoop.nextObject()) {
-        if( page.name() == 'Template') {
+        if (page.name() == pageName) {
             return page
         }
     }
@@ -75,7 +84,7 @@ function getFirstTemplatePage() {
 
 
 // Populate screens
-function populateScreens(path, templatePage, numberOfScreensPerPage, descriptions) {
+function populateScreens(path, templatePage, numberOfScreensPerPage, projectName, descriptions) {
 	var fileManager = NSFileManager.defaultManager()
     var folders = fileManager.shallowSubpathsOfDirectoryAtURL(path)
 
@@ -116,7 +125,7 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, description
 					var screenGroup = templateScreens.layers().array()[screenCount]
 
 			    	// Get image layer
-			    	var imageLayer = getChildLayerByName(screenGroup, "Placeholder")
+			    	var imageLayer = getChildLayerByName(screenGroup, screenPlaceholderLayerName)
 
 			    	// // Get image data
 		            var data = fileManager.contentsAtPath(file)
@@ -129,24 +138,24 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, description
 		            imageLayer.image = imageData
 
 		            // Update screen number
-		            setTextOnChildLayerByName( screenGroup, "Number", screenNumber )
+		            setTextOnChildLayerByName( screenGroup, screenNumberLayerName, screenNumber )
 
 		            // Update heading text
-		            setTextOnChildLayerByName( screenGroup, "Heading", screenName )
+		            setTextOnChildLayerByName( screenGroup, screenHeadingLayerName, screenName )
 
 		            // Update description
-	                var descriptionsJSON = JSON.parse(descriptions)
-				    var description = descriptionsJSON[sectionName][filename]
+				    var description = descriptions[sectionName][filename]
 
 				    if (typeof description != 'string') {
 				    	description = ""
 				    }
-		            setTextOnChildLayerByName( screenGroup, "Description", description )
+		            setTextOnChildLayerByName( screenGroup, screenDescriptionLayerName, description )
 
 		            // If it's the first screen on a page, update page title
 		            if (screenCount === 0) {
-			            var header = getChildLayerByName(getFirstArtboard(), "Header")
-			            setTextOnChildLayerByName(header, "Section name", sectionName)
+			            var header = getChildLayerByName(getFirstArtboard(), headerLayerName)
+                        setTextOnChildLayerByName(header, projectNameLayerName, projectName)
+                        setTextOnChildLayerByName(header, sectionNameLayerName, sectionName)
 
 		            	page.setName(sectionName)
 			        }
@@ -163,7 +172,7 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, description
 					var slotsLeft = numberOfScreensPerPage - (screenCount % numberOfScreensPerPage)
 
 					// Remove empty slots
-		            var screens = getChildLayerByName(getFirstArtboard(), "Screens")
+		            var screens = getChildLayerByName(getFirstArtboard(), screensLayerGroupName)
 					for (var j=0; j<slotsLeft; j++) {
 						screens.removeLayer(screens.lastLayer())
 					}
@@ -198,12 +207,23 @@ function duplicateTemplatePage(templatePage) {
     return newPage
 }
 
-function populateCover() {
-	print('populateCover')
+function populateCover(projectName, documentVersion) {
+    // Get the cover page and it's artboard
+    var coverPage = getPageByName(coverPageName)
+    var coverArtboard = coverPage.artboards().firstObject()
+
+    // Get the cover header
+    // TODO: Remove the need to get the header by doing a deep search for layers in the page
+    var coverHeader = getChildLayerByName(coverArtboard, coverHeaderLayerGroupName)
+
+    // Set the project name
+    setTextOnChildLayerByName(coverArtboard, coverProjectNameLayerName, projectName)
+    // Set the version number
+    setTextOnChildLayerByName(coverHeader, coverDocumentVersionLayerName, documentVersion)
 }
 
 function removeTemplatePage() {
-	var templatePage = getFirstTemplatePage()
+	var templatePage = getPageByName(templatePageName)
 	var pages = doc.pages()
 	print(templatePage)
 	print(pages)
