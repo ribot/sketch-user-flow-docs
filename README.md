@@ -11,7 +11,8 @@ This plugin exports every artboard in your design document and allows you to cre
 4. Put those files in this folder
 
 # Usage
-1. In your visual design document run the 'Export for User Flows' plugin ```(⌃⇧E)```
+1. In your visual design document make sure each artboard has a text layer named 'User Flow Description' (which you can hide if you like)
+2. Run the 'Export for User Flows' plugin ```(⌃⇧E)```
 2. Fill in the project name and version number
 3. Create a new User Flow doc by going ```File > New From Template > Ribot Visual Doc iPhone 6```
 4. Run the 'Populate User Flows' plugin ```(⌃⇧P)```
