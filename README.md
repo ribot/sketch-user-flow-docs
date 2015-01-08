@@ -8,7 +8,8 @@ This plugin exports every artboard in your design document and allows you to cre
 1. Download the repository using this [link](https://github.com/ribot/sketch-linked-images/archive/master.zip)
 2. Unzip the files from the ZIP
 3. In Sketch 3, select `Plugins > Reveal Plugins Folder...` from the menu bar
-4. Put those files in this folder
+4. Put the (downloaded, unzipped) folder in here
+5. At the same level is a **Templates** folder - make sure you have the latest templates in there (from ```Dropbox > Design Templates > Sketch Templates```)
 
 # Usage
 1. In your visual design document make sure each artboard has a text layer named **User Flow Description** (which you can hide if you like)
