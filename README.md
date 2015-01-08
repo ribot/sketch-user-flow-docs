@@ -11,8 +11,17 @@ This plugin exports every artboard in your design document and allows you to cre
 4. Put the (downloaded, unzipped) folder in here
 5. At the same level is a **Templates** folder - make sure you have the latest templates in there (from ```Dropbox > Design Templates > Sketch Templates```)
 
+# Setup
+In your visual design document...
+* Pages should be given a simple name (e.g.):
+    * Sign in
+* Artboards should have a number and title (e.g.):
+    * 01 Sign in
+    * 02 Sign in success
+    * 03 Sign in failure
+* Add a text layer named **User Flow Description** to each artboard (screen) where you want a description in the user flow doc (you can hide this text layer if you like)
+
 # Usage
-1. In your visual design document make sure each artboard has a text layer named **User Flow Description** (which you can hide if you like)
 2. Run the **Export for User Flows** plugin ```(⌃⇧E)```
 2. Fill in the project name and version number
 3. Create a new User Flow doc by going ```File > New From Template > Ribot Visual Doc iPhone 6```
