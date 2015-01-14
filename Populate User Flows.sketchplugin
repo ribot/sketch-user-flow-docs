@@ -31,7 +31,7 @@ function init() {
 	populateScreens(path, templatePage, numberOfScreensPerPage, projectName, descriptions)
 
 	// Remove template
-	removeTemplatePage()
+	removeTemplatePages()
 
 	// Let it snow...
 	finish()
@@ -70,16 +70,26 @@ function getTemplateScreens() {
 }
 
 function getPageByName(pageName) {
+	var matchingPages = getPagesByName( pageName )
+	if ( matchingPages.length ) {
+		return matchingPages[ 0 ]
+	} else {
+		return false
+	}
+}
+
+function getPagesByName(pageName) {
 	var pages = doc.pages()
 	var pageLoop = pages.objectEnumerator()
+	var matchingPages = []
 
     while (page = pageLoop.nextObject()) {
         if (page.name() == pageName) {
-            return page
+            matchingPages.push( page )
         }
     }
 
-    return false
+    return matchingPages
 }
 
 
@@ -111,7 +121,6 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 
 	            // Get filename and components
 		        var filename = file.lastPathComponent().stringByDeletingPathExtension()
-		        print(sectionName + ' - ' + filename)
 
 		        if(shouldIgnoreItem(filename)) {
 		        	// If we're not displaying a file, remove it from the numberOfFilesInFolder
@@ -169,10 +178,10 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 				var haveRunOutOfScreensForSection = (screensInSectionCount == numberOfFilesInFolder)
 	            if (haveRunOutOfScreensForSection) {
 	            	// Work out how many slots left
-					var slotsLeft = numberOfScreensPerPage - (screenCount % numberOfScreensPerPage)
+					var slotsLeft = ( numberOfScreensPerPage - screenCount ) % numberOfScreensPerPage
 
 					// Remove empty slots
-		            var screens = getChildLayerByName(getFirstArtboard(), screensLayerGroupName)
+		            var screens = getChildLayerByName( getFirstArtboard(), screensLayerGroupName )
 					for (var j=0; j<slotsLeft; j++) {
 						screens.removeLayer(screens.lastLayer())
 					}
@@ -222,12 +231,9 @@ function populateCover(projectName, documentVersion) {
     setTextOnChildLayerByName(coverHeader, coverDocumentVersionLayerName, documentVersion)
 }
 
-function removeTemplatePage() {
-	var templatePage = getPageByName(templatePageName)
-	var pages = doc.pages()
-	print(templatePage)
-	print(pages)
-    pages.removeObject(templatePage)
+function removeTemplatePages() {
+	var templatePages = getPagesByName(templatePageName)
+	doc.pages().removeObjectsInArray( templatePages )
 }
 
 // TODO: Show save dialog
