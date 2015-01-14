@@ -109,6 +109,7 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 
 	    	// Get folder name (for page title)
 	        var sectionName = folder.lastPathComponent()
+	        var sectionDisplayName = sectionName.substr( sectionName.indexOf(' ') + 1 );
 
 	    	// Loop through files
 	    	var files = fileManager.shallowSubpathsOfDirectoryAtURL(folder)
@@ -127,7 +128,10 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 		        	numberOfFilesInFolder--
 		        } else {
 		            var screenNumber = filename.componentsSeparatedByString(" ")[0]
+		            var screenDisplayNumber = screenNumber.replace( /\_/g, '.' )
+		            print( screenDisplayNumber )
 		            var screenName = filename.substringFromIndex(screenNumber.length()+1)
+		            var screenDisplayName = screenName.replace( /\_/g, ' ' )
 
 			    	// Get correct screen group
 					var templateScreens = getTemplateScreens()
@@ -147,10 +151,10 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 		            imageLayer.image = imageData
 
 		            // Update screen number
-		            setTextOnChildLayerByName( screenGroup, screenNumberLayerName, screenNumber )
+		            setTextOnChildLayerByName( screenGroup, screenNumberLayerName, screenDisplayNumber )
 
 		            // Update heading text
-		            setTextOnChildLayerByName( screenGroup, screenHeadingLayerName, screenName )
+		            setTextOnChildLayerByName( screenGroup, screenHeadingLayerName, screenDisplayName )
 
 		            // Update description
 				    var description = descriptions[sectionName][filename]
@@ -164,9 +168,9 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 		            if (screenCount === 0) {
 			            var header = getChildLayerByName(getFirstArtboard(), headerLayerName)
                         setTextOnChildLayerByName(header, projectNameLayerName, projectName)
-                        setTextOnChildLayerByName(header, sectionNameLayerName, sectionName)
+                        setTextOnChildLayerByName(header, sectionNameLayerName, sectionDisplayName)
 
-		            	page.setName(sectionName)
+		            	page.setName(sectionDisplayName)
 			        }
 
 			        // Update the screenCount
