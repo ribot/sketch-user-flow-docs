@@ -79,8 +79,7 @@ function getPageByName(pageName) {
 }
 
 function getPagesByName(pageName) {
-	var pages = doc.pages()
-	var pageLoop = pages.objectEnumerator()
+	var pageLoop = doc.pages().objectEnumerator()
 	var matchingPages = []
 
     while (page = pageLoop.nextObject()) {
@@ -92,11 +91,19 @@ function getPagesByName(pageName) {
     return matchingPages
 }
 
+function sortLikeFinder( a, b ) {
+	a = a.name.lastPathComponent()
+	b = b.name.lastPathComponent()
+	var comparison = [a localizedStandardCompare:b];
+
+    return comparison;
+}
+
 
 // Populate screens
 function populateScreens(path, templatePage, numberOfScreensPerPage, projectName, descriptions) {
 	var fileManager = NSFileManager.defaultManager()
-    var folders = fileManager.shallowSubpathsOfDirectoryAtURL(path)
+    var folders = fileManager.shallowSubpathURLsOfDirectoryAtURL(path)
 
 	// Loop through folders
 	var folderLoop = folders.objectEnumerator()
@@ -111,14 +118,22 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 	        var sectionName = folder.lastPathComponent()
 	        var sectionDisplayName = sectionName.substr( sectionName.indexOf(' ') + 1 );
 
-	    	// Loop through files
+	    	// Get files for current folder
 	    	var files = fileManager.shallowSubpathsOfDirectoryAtURL(folder)
 	    	var numberOfFilesInFolder = files.length()
 	    	var screensInSectionCount = 0
 			var screenCount = 0
 
-			var fileLoop = files.objectEnumerator()
-		    while (file = fileLoop.nextObject()) {
+			// Sort files like finder
+			var sortedFiles = []
+		    for ( var i=0; i<numberOfFilesInFolder; i++ ) {
+		    	sortedFiles.push( [NSDictionary dictionaryWithObjectsAndKeys: files[i], @"name" ] )
+		    }
+		    sortedFiles.sort( sortLikeFinder );
+
+		    // Loop through files
+			for ( var i=0; i<numberOfFilesInFolder; i++ ) {
+				var file = sortedFiles[i].name;
 
 	            // Get filename and components
 		        var filename = file.lastPathComponent().stringByDeletingPathExtension()
@@ -129,7 +144,7 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 		        } else {
 		            var screenNumber = filename.componentsSeparatedByString(" ")[0]
 		            var screenDisplayNumber = screenNumber.replace( /\_/g, '.' )
-		            print( screenDisplayNumber )
+
 		            var screenName = filename.substringFromIndex(screenNumber.length()+1)
 		            var screenDisplayName = screenName.replace( /\_/g, ' ' )
 
