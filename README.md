@@ -9,23 +9,29 @@ This plugin exports every artboard in your design document and allows you to cre
 2. Unzip the files from the ZIP
 3. In Sketch 3, select `Plugins > Reveal Plugins Folder...` from the menu bar
 4. Put the (downloaded, unzipped) folder in here
-5. At the same level is a **Templates** folder - make sure you have the latest templates in there (from ```Dropbox > Design Templates > Sketch Templates```)
+5. Rename it `ribot User Flows`
+5. Go up a level in Finder and create a new folder called `Templates`
+6. Copy the latest templates from `Dropbox > Design Templates > Sketch Templates`
 
 # Setup
 In your visual design document...
-* Pages should be given a simple name (e.g.):
-    * Sign in
-* Artboards should have a number and title (e.g.):
-    * 01 Sign in
-    * 02 Sign in success
-    * 03 Sign in failure
-* Add a text layer named **User Flow Description** to each artboard (screen) where you want a description in the user flow doc (you can hide this text layer if you like)
+* **Pages** should be given a number and title separated by a space e.g.:
+    * 01 Welcome
+    * 02 Signin
+* **Artboards** should have a number and title separated by a space e.g.:
+    * 02.1 Sign in
+    * 02.2 Sign in success
+    * 02.3 Sign in failure
+* To hide a page or artboard, start the name with an underscore (e.g.):
+   *  _01 Welcome
+   *  _02.1 Sign in
+* Add a text layer named `User Flow Description` to each artboard (screen) where you want a description in the user flow doc (you can hide this text layer if you like)
 
 # Usage
-2. Run the **Export for User Flows** plugin ```(⌃⇧E)```
+2. Run the **Export for User Flows** plugin `(⌃⇧E)`
 2. Fill in the project name and version number
-3. Create a new User Flow doc by going ```File > New From Template > Ribot Visual Doc iPhone 6```
-4. Run the **Populate User Flows** plugin ```(⌃⇧P)```
+3. Create a new User Flow doc by going `File > New From Template > Ribot Visual Doc iPhone 6`
+4. Run the **Populate User Flows** plugin `(⌃⇧P)`
 5. Save your User Flow doc
 
 # Compatibility
