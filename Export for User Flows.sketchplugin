@@ -3,75 +3,81 @@
 #import 'sandbox.js'
 #import 'lib/constants.js'
 
-// Ask the user where they want to export to
-var openPanel = NSOpenPanel.openPanel()
-openPanel.setCanChooseDirectories(true)
-openPanel.setCanChooseFiles(false)
-openPanel.setCanCreateDirectories(true)
-openPanel.setTitle("Choose an folder to export to...")
-openPanel.setPrompt("Export")
-if (openPanel.runModal() == NSOKButton) {
-    // Get the url of the folder the user selected
-    var exportBaseUrl = openPanel.URL()
+var homeFolder = "/Users/" + NSUserName()
+new AppSandbox().authorize( homeFolder, init )
 
-    // Create an object to store the JSON data in
-    var jsonObject = {}
-    // Create an object to store descriptions in
-    jsonObject[descriptionsJSONKey] = {}
-    var descriptions = jsonObject[descriptionsJSONKey]
+function init() {
+    // Ask the user where they want to export to
+    var openPanel = NSOpenPanel.openPanel()
+    openPanel.setCanChooseDirectories(true)
+    openPanel.setCanChooseFiles(false)
+    openPanel.setCanCreateDirectories(true)
+    openPanel.setTitle("Choose an folder to export to...")
+    openPanel.setPrompt("Export")
 
-    // Loop through all the pages
-    var pageLoop = doc.pages().objectEnumerator()
-    while (page = pageLoop.nextObject()) {
-        // Create an object to store the descriptions for each artboard in this page, using the page name as the key
-        descriptions[page.name()] = {}
+    if (openPanel.runModal() == NSOKButton) {
+        // Get the url of the folder the user selected
+        var exportBaseUrl = openPanel.URL()
 
-        // Switch to this pag to avoid errors when exporting
-        doc.setCurrentPage(page)
+        // Create an object to store the JSON data in
+        var jsonObject = {}
+        // Create an object to store descriptions in
+        jsonObject[descriptionsJSONKey] = {}
+        var descriptions = jsonObject[descriptionsJSONKey]
 
-        // Setup the URL for the page
-        var pageDirectoryUrl = [exportBaseUrl URLByAppendingPathComponent:page.name() isDirectory:true]
+        // Loop through all the pages
+        var pageLoop = doc.pages().objectEnumerator()
+        while (page = pageLoop.nextObject()) {
+            // Create an object to store the descriptions for each artboard in this page, using the page name as the key
+            descriptions[page.name()] = {}
 
-        // Create the directory for this page to export to
-        [[NSFileManager defaultManager] createDirectoryAtURL:pageDirectoryUrl withIntermediateDirectories:false attributes:null error:null]
+            // Switch to this pag to avoid errors when exporting
+            doc.setCurrentPage(page)
 
-        // Export each of this pages artboards to the page directory
-        var artboardLoop = page.artboards().objectEnumerator()
-        while (artboard = artboardLoop.nextObject()) {
-            // Check that it's an artboard and not a slice
-            if (artboard.class() == MSArtboardGroup.class()) {
-                // Export the artboard to the correct file location
-                var artboardPath = pageDirectoryUrl.URLByAppendingPathComponent(artboard.name() + fileExtension).path()
-                [doc saveArtboardOrSlice:artboard toFile:artboardPath];
+            // Setup the URL for the page
+            var pageDirectoryUrl = [exportBaseUrl URLByAppendingPathComponent:page.name() isDirectory:true]
 
-                // Get the user flow description text layer, if there is one
-                var artboardDescription = null
-                var possibleDescriptionLayer = getChildLayerByName(artboard, userFlowDescriptionLayerName)
-                if (possibleDescriptionLayer) {
-                    artboardDescription = new String(possibleDescriptionLayer.stringValue())
+            // Create the directory for this page to export to
+            [[NSFileManager defaultManager] createDirectoryAtURL:pageDirectoryUrl withIntermediateDirectories:false attributes:null error:null]
+
+            // Export each of this pages artboards to the page directory
+            var artboardLoop = page.artboards().objectEnumerator()
+            while (artboard = artboardLoop.nextObject()) {
+                // Check that it's an artboard and not a slice
+                if (artboard.class() == MSArtboardGroup.class()) {
+                    // Export the artboard to the correct file location
+                    var artboardPath = pageDirectoryUrl.URLByAppendingPathComponent(artboard.name() + fileExtension).path()
+                    [doc saveArtboardOrSlice:artboard toFile:artboardPath];
+
+                    // Get the user flow description text layer, if there is one
+                    var artboardDescription = null
+                    var possibleDescriptionLayer = getChildLayerByName(artboard, userFlowDescriptionLayerName)
+                    if (possibleDescriptionLayer) {
+                        artboardDescription = new String(possibleDescriptionLayer.stringValue())
+                    }
+
+                    // Put the artboard description in the descriptions object
+                    descriptions[page.name()][artboard.name()] = artboardDescription
                 }
-
-                // Put the artboard description in the descriptions object
-                descriptions[page.name()][artboard.name()] = artboardDescription
             }
         }
+
+        // Ask the user for the name of the project
+        var projectName = [doc askForUserInput:"What is this project called?" initialValue:guessProjectName()]
+        jsonObject[projectNameJSONKey] = new String(projectName)
+
+        // Ask the user for the verson of the document
+        var documentVersion = [doc askForUserInput:"What version of the document is this?" initialValue:guessDocumentVersion()]
+        jsonObject[documentVersionJSONKey] = new String(documentVersion)
+
+        // Convert the descrptions object to JSON
+        var jsonString = JSON.stringify(jsonObject)
+        var jsonData = @jsonString.dataUsingEncoding(NSUTF8StringEncoding))
+
+        // Save the descriptions to a JSON file
+        var metadataFilePath = exportBaseUrl.URLByAppendingPathComponent(metadataFilename).path()
+        [[NSFileManager defaultManager] createFileAtPath:metadataFilePath contents:jsonData attributes:nil]
     }
-
-    // Ask the user for the name of the project
-    var projectName = [doc askForUserInput:"What is this project called?" initialValue:guessProjectName()]
-    jsonObject[projectNameJSONKey] = new String(projectName)
-
-    // Ask the user for the verson of the document
-    var documentVersion = [doc askForUserInput:"What version of the document is this?" initialValue:guessDocumentVersion()]
-    jsonObject[documentVersionJSONKey] = new String(documentVersion)
-
-    // Convert the descrptions object to JSON
-    var jsonString = JSON.stringify(jsonObject)
-    var jsonData = @jsonString.dataUsingEncoding(NSUTF8StringEncoding))
-
-    // Save the descriptions to a JSON file
-    var metadataFilePath = exportBaseUrl.URLByAppendingPathComponent(metadataFilename).path()
-    [[NSFileManager defaultManager] createFileAtPath:metadataFilePath contents:jsonData attributes:nil]
 }
 
 function guessProjectName() {
