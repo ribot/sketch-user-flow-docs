@@ -2,6 +2,7 @@
 
 #import 'sandbox.js'
 #import 'lib/constants.js'
+#import 'lib/utils.js'
 
 var homeFolder = "/Users/" + NSUserName()
 new AppSandbox().authorize( homeFolder, init )
@@ -21,18 +22,17 @@ function init() {
 
         // Create an object to store the JSON data in
         var jsonObject = {}
-        // Create an object to store descriptions in
-        jsonObject[descriptionsJSONKey] = {}
-        var descriptions = jsonObject[descriptionsJSONKey]
+        var sectionsJson = {}
 
         // Loop through all the pages
         var pageLoop = doc.pages().objectEnumerator()
-        while (page = pageLoop.nextObject()) {
+        while ( page = pageLoop.nextObject() ) {
             // Create an object to store the descriptions for each artboard in this page, using the page name as the key
-            descriptions[page.name()] = {}
+            var section = parseName( page.name() );
+            section.screens = {};
 
             // Switch to this pag to avoid errors when exporting
-            doc.setCurrentPage(page)
+            doc.setCurrentPage( page )
 
             // Setup the URL for the page
             var pageDirectoryUrl = [exportBaseUrl URLByAppendingPathComponent:page.name() isDirectory:true]
@@ -42,25 +42,26 @@ function init() {
 
             // Export each of this pages artboards to the page directory
             var artboardLoop = page.artboards().objectEnumerator()
-            while (artboard = artboardLoop.nextObject()) {
+            while ( artboard = artboardLoop.nextObject() ) {
                 // Check that it's an artboard and not a slice
-                if (artboard.class() == MSArtboardGroup.class()) {
+                if ( artboard.class() == MSArtboardGroup.class() ) {
                     // Export the artboard to the correct file location
-                    var artboardPath = pageDirectoryUrl.URLByAppendingPathComponent(artboard.name() + fileExtension).path()
+                    var artboardPath = pageDirectoryUrl.URLByAppendingPathComponent( artboard.name() + fileExtension ).path()
                     [doc saveArtboardOrSlice:artboard toFile:artboardPath];
 
-                    // Get the user flow description text layer, if there is one
-                    var artboardDescription = null
-                    var possibleDescriptionLayer = getChildLayerByName(artboard, userFlowDescriptionLayerName)
-                    if (possibleDescriptionLayer) {
-                        artboardDescription = new String(possibleDescriptionLayer.stringValue())
-                    }
+                    var screen = getArtboardData( artboard );
 
                     // Put the artboard description in the descriptions object
-                    descriptions[page.name()][artboard.name()] = artboardDescription
+                    section.screens[ artboard.name() ] = screen;
                 }
             }
+
+            // Add section to JSON
+            sectionsJson[ page.name() ] = section;
         }
+
+        // Add the sections
+        jsonObject[ sectionsJSONKey ] = sectionsJson;
 
         // Ask the user for the name of the project
         var projectName = [doc askForUserInput:"What is this project called?" initialValue:guessProjectName()]
@@ -72,6 +73,7 @@ function init() {
 
         // Convert the descrptions object to JSON
         var jsonString = JSON.stringify(jsonObject)
+        print( jsonObject)
         var jsonData = @jsonString.dataUsingEncoding(NSUTF8StringEncoding))
 
         // Save the descriptions to a JSON file
@@ -93,15 +95,45 @@ function getFilenameWithoutExtension() {
     return [filename stringByReplacingOccurrencesOfString:".sketch" withString:""]
 }
 
-// A a layer inside the given layer group which has the name
-function getChildLayerByName(group, name) {
-    var layers = group.layers()
-    var layerLoop = layers.array().objectEnumerator()
-    while (childLayer = layerLoop.nextObject()) {
-        if (childLayer.name() == name) {
-            return childLayer;
-        }
+function getArtboardData( artboard ) {
+    // Get the user flow description text layer, if there is one
+    var artboardData = parseName( artboard.name() );
+
+    // Parse title for status
+    var title = artboardData.title;
+    var statusMatch = /\[([\w\s]+)\]/.exec( title );
+    if ( statusMatch ) {
+        artboardData.status = statusMatch[ 1 ]
+        artboardData.title = title.split( '[' )[ 0 ];
     }
 
-    return false;
+    // Get description
+    var possibleDescriptionLayer = getChildLayerByName(artboard, userFlowDescriptionLayerName)
+    if (possibleDescriptionLayer) {
+        artboardData.description = new String(possibleDescriptionLayer.stringValue())
+    }
+
+    return artboardData;
+}
+
+function parseName( name ) {
+    var original = new String( name );
+    var tag = name.split( " " )[ 0 ];
+    var displayTag = tag.replace( /\_/g, '.' );
+
+    var title = name.substringFromIndex( tag.length + 1 );
+    var displayTitle = title.replace( /\_/g, ' ' );
+
+    var data = {
+        tag: displayTag,
+        title: displayTitle,
+        original: original
+    };
+
+    var firstCharacter = tag.charAt( 0 );
+    if ( firstCharacter == "_" || firstCharacter == "-" ) {
+        data.exclude = true;
+    }
+
+    return data;
 }

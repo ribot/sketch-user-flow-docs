@@ -2,6 +2,7 @@
 
 #import 'sandbox.js'
 #import 'lib/constants.js'
+#import 'lib/utils.js'
 
 init()
 
@@ -18,7 +19,7 @@ function init() {
     // Get the document version from the metadata
     var documentVersion = metadata[documentVersionJSONKey]
     // Get the descriptions from the metadata
-    var descriptions = metadata[descriptionsJSONKey]
+    var screenData = metadata[sectionsJSONKey]
 
 	// Select first template page
 	var templatePage = getPageByName(templatePageName)
@@ -29,7 +30,7 @@ function init() {
 	populateCover(projectName, documentVersion)
 
 	// Populate screens
-	populateScreens(path, templatePage, numberOfScreensPerPage, projectName, descriptions)
+	populateScreens(path, templatePage, numberOfScreensPerPage, projectName, screenData)
 
 	// Remove template
 	removeTemplatePages()
@@ -70,54 +71,25 @@ function getTemplateScreens() {
     return getChildLayerByName(getFirstArtboard(), screensLayerGroupName)
 }
 
-function getPageByName(pageName) {
-	var matchingPages = getPagesByName( pageName )
-	if ( matchingPages.length ) {
-		return matchingPages[ 0 ]
-	} else {
-		return false
-	}
-}
-
-function getPagesByName(pageName) {
-	var pageLoop = doc.pages().objectEnumerator()
-	var matchingPages = []
-
-    while (page = pageLoop.nextObject()) {
-        if (page.name() == pageName) {
-            matchingPages.push( page )
-        }
-    }
-
-    return matchingPages
-}
-
-function sortLikeFinder( a, b ) {
-	a = a.name.lastPathComponent()
-	b = b.name.lastPathComponent()
-	var comparison = [a localizedStandardCompare:b];
-
-    return comparison;
-}
-
-
 // Populate screens
-function populateScreens(path, templatePage, numberOfScreensPerPage, projectName, descriptions) {
+function populateScreens(path, templatePage, numberOfScreensPerPage, projectName, screenData) {
 	var fileManager = NSFileManager.defaultManager()
-    var folders = fileManager.shallowSubpathURLsOfDirectoryAtURL(path)
+    var folders = fileManager.shallowSubpathsOfDirectoryAtURL( path );
 
 	// Loop through folders
 	var folderLoop = folders.objectEnumerator()
     while (folder = folderLoop.nextObject()) {
+    	var key = folder.lastPathComponent();
+    	var folderData = screenData[ key ];
+
     	// Check if it's a folder and if shouldIgnoreItem should be ignored
-    	if(!shouldIgnoreItem(folder) && folder.pathExtension() == "") {
+    	if( folder.pathExtension() == "" && !shouldIgnoreItem( folderData ) ) {
 			// Duplicate Templates page to start
 			var pageCount = 0
 			var page = duplicateTemplatePage(templatePage)
 
 	    	// Get folder name (for page title)
-	        var sectionName = folder.lastPathComponent()
-	        var sectionDisplayName = sectionName.substr( sectionName.indexOf(' ') + 1 );
+	        var sectionDisplayName = folderData.title
 
 	    	// Get files for current folder
 	    	var files = fileManager.shallowSubpathsOfDirectoryAtURL(folder)
@@ -132,22 +104,24 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 		    }
 		    sortedFiles.sort( sortLikeFinder );
 
+		    print( numberOfFilesInFolder )
 		    // Loop through files
 			for ( var i=0; i<numberOfFilesInFolder; i++ ) {
 				var file = sortedFiles[i].name;
+				var key = file.lastPathComponent().stringByDeletingPathExtension();
+				var fileData = folderData.screens[ key ];
+				print( fileData )
 
-	            // Get filename and components
-		        var filename = file.lastPathComponent().stringByDeletingPathExtension()
-
-		        if(shouldIgnoreItem(filename)) {
+		        if( shouldIgnoreItem( fileData ) ) {
 		        	// If we're not displaying a file, remove it from the numberOfFilesInFolder
-		        	numberOfFilesInFolder--
+		        	// numberOfFilesInFolder--
 		        } else {
-		            var screenNumber = filename.componentsSeparatedByString(" ")[0]
-		            var screenDisplayNumber = screenNumber.replace( /\_/g, '.' )
-
-		            var screenName = filename.substringFromIndex(screenNumber.length()+1)
-		            var screenDisplayName = screenName.replace( /\_/g, ' ' )
+		            var screenDisplayNumber = fileData.tag
+		            var screenDisplayName = fileData.title
+		            var screenDescription = fileData.description
+				    if (typeof screenDescription != 'string') {
+				    	screenDescription = ""
+				    }
 
 			    	// Get correct screen group
 					var templateScreens = getTemplateScreens()
@@ -173,12 +147,7 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 		            setTextOnChildLayerByName( screenGroup, screenHeadingLayerName, screenDisplayName )
 
 		            // Update description
-				    var description = descriptions[sectionName][filename]
-
-				    if (typeof description != 'string') {
-				    	description = ""
-				    }
-		            setTextOnChildLayerByName( screenGroup, screenDescriptionLayerName, description )
+		            setTextOnChildLayerByName( screenGroup, screenDescriptionLayerName, screenDescription )
 
 		            // If it's the first screen on a page, update page title
 		            if (screenCount === 0) {
@@ -192,38 +161,42 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 			        // Update the screenCount
 		            screenCount++
 		            screensInSectionCount++
+
+		            // If we've run out of screens in this section, remove any unnecessary ones
+					var haveRunOutOfScreensForSection = (screensInSectionCount == numberOfFilesInFolder)
+		            if (haveRunOutOfScreensForSection) {
+		            	// Work out how many slots left
+						var slotsLeft = ( numberOfScreensPerPage - screenCount ) % numberOfScreensPerPage
+
+						// Remove empty slots
+			            var screens = getChildLayerByName( getFirstArtboard(), screensLayerGroupName )
+						for (var j=0; j<slotsLeft; j++) {
+							screens.removeLayer(screens.lastLayer())
+						}
+		            }
+
+		            // If we've run out of screens in this section OR we're on the third screen, duplicate the page and go through loop again
+					var haveRunOutOfSlotsForPage = !(screenCount % numberOfScreensPerPage)
+		            if (haveRunOutOfSlotsForPage) {
+		            	// Update counts
+		            	screenCount = 0
+		            	pageCount++
+
+		            	// Duplicate page
+		            	page = duplicateTemplatePage(templatePage)
+		            }
 				}
 
-	            // If we've run out of screens in this section, remove any unnecessary ones
-				var haveRunOutOfScreensForSection = (screensInSectionCount == numberOfFilesInFolder)
-	            if (haveRunOutOfScreensForSection) {
-	            	// Work out how many slots left
-					var slotsLeft = ( numberOfScreensPerPage - screenCount ) % numberOfScreensPerPage
-
-					// Remove empty slots
-		            var screens = getChildLayerByName( getFirstArtboard(), screensLayerGroupName )
-					for (var j=0; j<slotsLeft; j++) {
-						screens.removeLayer(screens.lastLayer())
-					}
-	            }
-
-	            // If we've run out of screens in this section OR we're on the third screen, duplicate the page and go through loop again
-				var haveRunOutOfSlotsForPage = !(screenCount % numberOfScreensPerPage)
-	            if (haveRunOutOfSlotsForPage) {
-	            	// Update counts
-	            	screenCount = 0
-	            	pageCount++
-
-	            	// Duplicate page
-	            	page = duplicateTemplatePage(templatePage)
-	            }
 		    }
 		}
     }
 }
 
-function shouldIgnoreItem(path) {
-	return path.lastPathComponent().hasPrefix("_")
+function shouldIgnoreItem( item ) {
+	if( typeof item  == 'undefined' ) {
+		return false
+	}
+	return item.exclude;
 }
 
 function duplicateTemplatePage(templatePage) {
@@ -259,30 +232,4 @@ function removeTemplatePages() {
 // TODO: Show save dialog
 function finish() {
 	doc.showMessage( "All done!" );
-}
-
-function getFirstArtboard() {
-	return doc.currentPage().artboards().firstObject()
-}
-
-function setTextOnChildLayerByName(group, name, text) {
-    var layer = getChildLayerByName( group, name )
-    if ( layer ) {
-        layer.setStringValue( text )
-        layer.adjustFrameToFit()
-    }
-}
-
-function getChildLayerByName(group, name) {
-    var layers = group.layers()
-    var layerLoop = layers.array().objectEnumerator()
-
-    while (childLayer = layerLoop.nextObject()) {
-        if( childLayer.name() == name) {
-            return childLayer
-        }
-    }
-
-    doc.showMessage( "No layer called " + name + " found" )
-    return false;
 }
