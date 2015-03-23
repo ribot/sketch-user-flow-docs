@@ -99,14 +99,6 @@ function getArtboardData( artboard ) {
     // Get the user flow description text layer, if there is one
     var artboardData = parseName( artboard.name() );
 
-    // Parse title for status
-    var title = artboardData.title;
-    var statusMatch = /\[([\w\s]+)\]/.exec( title );
-    if ( statusMatch ) {
-        artboardData.status = statusMatch[ 1 ]
-        artboardData.title = title.split( '[' )[ 0 ];
-    }
-
     // Get description
     var possibleDescriptionLayer = getChildLayerByName(artboard, userFlowDescriptionLayerName)
     if (possibleDescriptionLayer) {
@@ -120,6 +112,7 @@ function parseName( name ) {
     var original = new String( name );
     var tag = name.split( " " )[ 0 ];
     var displayTag = tag.replace( /\_/g, '.' );
+    var status = null;
 
     var title = name.substringFromIndex( tag.length + 1 );
     var displayTitle = title.replace( /\_/g, ' ' );
@@ -127,8 +120,14 @@ function parseName( name ) {
     var data = {
         tag: displayTag,
         title: displayTitle,
-        original: original
+        original: original,
     };
+
+    var statusMatch = /\[([\w\s]+)\]/.exec( title );
+    if ( statusMatch ) {
+        data.status = statusMatch[ 1 ].toUpperCase();
+        data.title = displayTitle.split( '[' )[ 0 ];
+    }
 
     var firstCharacter = tag.charAt( 0 );
     if ( firstCharacter == "_" || firstCharacter == "-" ) {

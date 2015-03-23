@@ -104,13 +104,11 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 		    }
 		    sortedFiles.sort( sortLikeFinder );
 
-		    print( numberOfFilesInFolder )
 		    // Loop through files
 			for ( var i=0; i<numberOfFilesInFolder; i++ ) {
 				var file = sortedFiles[i].name;
 				var key = file.lastPathComponent().stringByDeletingPathExtension();
 				var fileData = folderData.screens[ key ];
-				print( fileData )
 
 		        if( shouldIgnoreItem( fileData ) ) {
 		        	// If we're not displaying a file, remove it from the numberOfFilesInFolder
@@ -122,6 +120,7 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 				    if (typeof screenDescription != 'string') {
 				    	screenDescription = ""
 				    }
+				    var screenStatus = fileData.status
 
 			    	// Get correct screen group
 					var templateScreens = getTemplateScreens()
@@ -148,6 +147,14 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 
 		            // Update description
 		            setTextOnChildLayerByName( screenGroup, screenDescriptionLayerName, screenDescription )
+
+		            // Update status
+		            if ( screenStatus ) {
+		            print( screenStatus )
+			            setTextOnChildLayerByName( screenGroup, screenStatusLayerName, screenStatus )
+			            var screenStatusLayer = getChildLayerByName( screenGroup, screenStatusLayerName )
+			            screenStatusLayer.setIsVisible(true);
+			        }
 
 		            // If it's the first screen on a page, update page title
 		            if (screenCount === 0) {
