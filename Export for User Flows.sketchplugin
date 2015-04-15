@@ -8,6 +8,11 @@ var homeFolder = "/Users/" + NSUserName()
 new AppSandbox().authorize( homeFolder, init )
 
 function init() {
+    if ( doc.fileURL() == null ) {
+        doc.showMessage( "Please save your document first." );
+        return;
+    }
+
     // Ask the user where they want to export to
     var openPanel = NSOpenPanel.openPanel()
     openPanel.setCanChooseDirectories(true)
@@ -27,8 +32,13 @@ function init() {
         // Loop through all the pages
         var pageLoop = doc.pages().objectEnumerator()
         while ( page = pageLoop.nextObject() ) {
+
             // Create an object to store the descriptions for each artboard in this page, using the page name as the key
             var section = parseName( page.name() );
+            if ( !section ) {
+                return;
+            }
+
             section.screens = {};
 
             // Switch to this pag to avoid errors when exporting
@@ -50,6 +60,9 @@ function init() {
                     [doc saveArtboardOrSlice:artboard toFile:artboardPath];
 
                     var screen = getArtboardData( artboard );
+                    if ( !screen ) {
+                        return;
+                    }
 
                     // Put the artboard description in the descriptions object
                     section.screens[ artboard.name() ] = screen;
@@ -73,7 +86,7 @@ function init() {
 
         // Convert the descrptions object to JSON
         var jsonString = JSON.stringify(jsonObject)
-        print( jsonObject)
+        print( jsonString )
         var jsonData = @jsonString.dataUsingEncoding(NSUTF8StringEncoding))
 
         // Save the descriptions to a JSON file
@@ -98,6 +111,9 @@ function getFilenameWithoutExtension() {
 function getArtboardData( artboard ) {
     // Get the user flow description text layer, if there is one
     var artboardData = parseName( artboard.name() );
+    if ( !artboardData ) {
+        return;
+    }
 
     // Get description
     var possibleDescriptionLayer = getChildLayerByName(artboard, userFlowDescriptionLayerName)
@@ -105,12 +121,24 @@ function getArtboardData( artboard ) {
         artboardData.description = new String(possibleDescriptionLayer.stringValue())
     }
 
+    var size = artboard.absoluteRect().rect().size;
+    artboardData.size = {
+        width: size.width * 1,
+        height: size.height * 1
+    };
+
     return artboardData;
 }
 
 function parseName( name ) {
     var original = new String( name );
-    var tag = name.split( " " )[ 0 ];
+    var nameParts = name.split( " " );
+    if ( nameParts.length === 1 ) {
+        doc.showMessage( '"' + name + '" is not formatted correctly. Please use a name such as "01 Home"' );
+        return;
+    }
+
+    var tag = nameParts[ 0 ];
     var displayTag = tag.replace( /\_/g, '.' );
     var status = null;
 
