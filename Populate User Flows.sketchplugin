@@ -1,8 +1,8 @@
 // Populate User Flows (command control p)
 
-#import 'sandbox.js'
-#import 'lib/constants.js'
-#import 'lib/utils.js'
+@import 'sandbox.js'
+@import 'lib/constants.js'
+@import 'lib/utils.js'
 
 init()
 
@@ -145,12 +145,15 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 						imageLayer.setConstrainProportions( false );
 
 						var rect = CGRectZero;
-						rect.size.width = imageLayer.absoluteRect().rect().size.width;
+						rect.size.width = imageLayer.rect().size.width;
 						rect.size.height = rect.size.width * fileData.size.height / fileData.size.width;
-						rect.origin.x = maskLayer.absoluteRect().rect().origin.x;
-						rect.origin.y = maskLayer.absoluteRect().rect().origin.y;
+						rect.origin.x = maskLayer.rect().origin.x;
+						rect.origin.y = maskLayer.rect().origin.y;
 
-						imageLayer.absoluteRect().setRect( rect );
+						print( rect );
+						print( imageLayer.rect() );
+
+						imageLayer.setRect( rect );
 						imageLayer.setConstrainProportions( true );
 		            }
 
