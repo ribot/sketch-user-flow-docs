@@ -23,6 +23,7 @@ function init() {
 
 	// Select first template page
 	var templatePage = getPageByName(templatePageName)
+
 	// Get number of screens per page
 	var numberOfScreensPerPage = getScreensPerPageFromTemplate(templatePage)
 
@@ -141,7 +142,7 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 
 		            // Reposition and resize new image
 		            // This is mostly used for cropping screens that are too big (e.g. websites)
-		            if ( fileData.size.width ) {
+		            if ( maskLayer && fileData.size.width ) {
 						imageLayer.setConstrainProportions( false );
 
 						var rect = CGRectZero;
@@ -149,9 +150,6 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 						rect.size.height = rect.size.width * fileData.size.height / fileData.size.width;
 						rect.origin.x = maskLayer.rect().origin.x;
 						rect.origin.y = maskLayer.rect().origin.y;
-
-						print( rect );
-						print( imageLayer.rect() );
 
 						imageLayer.setRect( rect );
 						imageLayer.setConstrainProportions( true );
@@ -168,7 +166,6 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 
 		            // Update status
 		            if ( screenStatus ) {
-		            print( screenStatus )
 			            setTextOnChildLayerByName( screenGroup, screenStatusLayerName, screenStatus )
 			            var screenStatusLayer = getChildLayerByName( screenGroup, screenStatusLayerName )
 			            screenStatusLayer.setIsVisible(true);

@@ -1,11 +1,13 @@
-// Export for User Flows (control shift e)
+// Export for User Flows (command control e)
 
-#import 'sandbox.js'
-#import 'lib/constants.js'
-#import 'lib/utils.js'
+@import 'sandbox.js';
+@import 'lib/constants.js';
+@import 'lib/utils.js';
 
-var homeFolder = "/Users/" + NSUserName()
-new AppSandbox().authorize( homeFolder, init )
+var userFlowMetadataLayerNameKey = new RegExp( userFlowMetadataLayerName );
+
+var homeFolder = "/Users/" + NSUserName();
+new AppSandbox().authorize( homeFolder, init );
 
 function init() {
     if ( doc.fileURL() == null ) {
@@ -41,8 +43,11 @@ function init() {
 
             section.screens = {};
 
-            // Switch to this pag to avoid errors when exporting
+            // Switch to this page to avoid errors when exporting
             doc.setCurrentPage( page )
+
+            // Hide screen descriptions
+            hideScreenDescriptions( doc.currentPage().layers().array() )
 
             // Setup the URL for the page
             var pageDirectoryUrl = [exportBaseUrl URLByAppendingPathComponent:page.name() isDirectory:true]
@@ -108,6 +113,14 @@ function getFilenameWithoutExtension() {
     return [filename stringByReplacingOccurrencesOfString:".sketch" withString:""]
 }
 
+function hideScreenDescriptions( layers ) {
+    processAllLayers( layers, function( layer ) {
+        if ( userFlowMetadataLayerNameKey.test( layer.name() ) ) {
+            layer.setIsVisible( false )
+        }
+    } )
+}
+
 function getArtboardData( artboard ) {
     // Get the user flow description text layer, if there is one
     var artboardData = parseName( artboard.name() );
@@ -115,10 +128,16 @@ function getArtboardData( artboard ) {
         return;
     }
 
-    // Get description
-    var possibleDescriptionLayer = getChildLayerByName(artboard, userFlowDescriptionLayerName)
-    if (possibleDescriptionLayer) {
-        artboardData.description = new String(possibleDescriptionLayer.stringValue())
+    // Get any metadata
+    var possibleMetadataLayer = getChildLayerByName(artboard, userFlowMetadataLayerName)
+    if ( possibleMetadataLayer ) {
+
+        // Get description
+        var possibleDescriptionLayer = getChildLayerByName(possibleMetadataLayer, userFlowDescriptionLayerName)
+        if (possibleDescriptionLayer) {
+            artboardData.description = new String(possibleDescriptionLayer.stringValue())
+        }
+
     }
 
     var size = artboard.absoluteRect().rect().size;
