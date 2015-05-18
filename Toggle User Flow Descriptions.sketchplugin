@@ -1,0 +1,20 @@
+// Toggles specially-named layers (command control d)
+
+@import 'sandbox.js';
+@import 'lib/constants.js';
+@import 'lib/utils.js';
+
+var key = new RegExp( userFlowMetadataLayerName );
+
+// Traverses layer tree and toggles visibility of all layers where name matches key
+function toggleVisibilityAllLayers( layers ) {
+    processAllLayers( layers, function( layer ) {
+        if ( key.test( layer.name() ) ) {
+            layer.setIsVisible( !layer.isVisible() )
+        }
+    } )
+}
+
+// Run...
+toggleVisibilityAllLayers( doc.currentPage().layers().array() )
+
