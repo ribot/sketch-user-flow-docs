@@ -1,12 +1,14 @@
-// Populate User Flows (command control p)
+@import 'sandbox.js';
+@import 'constants.js';
+@import 'utils.js';
 
-@import 'sandbox.js'
-@import 'lib/constants.js'
-@import 'lib/utils.js'
+// Globals
+var doc;
 
-init()
+// onRun handler
+function populateUserFlows( context ) {
+	doc = context.document;
 
-function init() {
 	var path = getExportsFolder()
 
 	// Get metadata into a JSON object
