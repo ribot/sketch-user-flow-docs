@@ -1,15 +1,20 @@
-// Export for User Flows (command control e)
-
 @import 'sandbox.js';
-@import 'lib/constants.js';
-@import 'lib/utils.js';
+@import 'constants.js';
+@import 'utils.js';
 
+// Globals
 var userFlowMetadataLayerNameKey = new RegExp( userFlowMetadataLayerName );
+var doc;
 
+// Sandboxing
 var homeFolder = "/Users/" + NSUserName();
-new AppSandbox().authorize( homeFolder, init );
+new AppSandbox().authorize( homeFolder, exportForUserFlows );
 
-function init() {
+// onRun handler
+function exportForUserFlows( context ) {
+    // Set global
+    doc = context.document;
+
     if ( doc.fileURL() == null ) {
         doc.showMessage( "Please save your document first." );
         return;
@@ -89,14 +94,14 @@ function init() {
         var documentVersion = [doc askForUserInput:"What version of the document is this?" initialValue:guessDocumentVersion()]
         jsonObject[documentVersionJSONKey] = new String(documentVersion)
 
-        // Convert the descrptions object to JSON
-        var jsonString = JSON.stringify(jsonObject)
-        print( jsonString )
-        var jsonData = @jsonString.dataUsingEncoding(NSUTF8StringEncoding))
-
-        // Save the descriptions to a JSON file
+        // Convert the descriptions object to JSON
         var metadataFilePath = exportBaseUrl.URLByAppendingPathComponent(metadataFilename).path()
-        [[NSFileManager defaultManager] createFileAtPath:metadataFilePath contents:jsonData attributes:nil]
+        var jsonString = [NSString stringWithFormat:"%@", JSON.stringify(jsonObject)];
+        print( jsonString );
+
+        [jsonString writeToFile:metadataFilePath atomically:true encoding:NSUTF8StringEncoding error:nil];
+
+        doc.showMessage( "All done!" );
     }
 }
 

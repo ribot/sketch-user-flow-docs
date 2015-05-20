@@ -1,0 +1,38 @@
+{
+  "author" : "ribot",
+  "commands" : [
+    {
+      "script" : "toggle-user-flow-metadata.cocoascript",
+      "handler" : "toggleUserFlowMetadata",
+      "shortcut" : "cmd ctrl d",
+      "name" : "Toggle User Flow Metadata",
+      "identifier" : "toggleUserFlowMetadata"
+    },
+    {
+      "script" : "export-for-user-flows.cocoascript",
+      "handler" : "exportForUserFlows",
+      "shortcut" : "cmd ctrl e",
+      "name" : "Export for User Flows",
+      "identifier" : "exportForUserFlows"
+    },
+    {
+      "script" : "populate-user-flows.cocoascript",
+      "handler" : "populateUserFlows",
+      "shortcut" : "cmd ctrl p",
+      "name" : "Populate User Flows",
+      "identifier" : "populateUserFlows"
+    }
+  ],
+  "menu": {
+    "items": [
+      "toggleUserFlowMetadata",
+      "exportForUserFlows",
+      "populateUserFlows"
+    ]
+  },
+  "identifier" : "uk.co.ribot.sketch.user-flow-docs",
+  "version" : "1.0",
+  "description" : "Example Sketch Plugin using resources from within the bundle and a library script.",
+  "authorEmail" : "rob@ribot.co.uk",
+  "name" : "User Flow Docs"
+}
