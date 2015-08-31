@@ -2,36 +2,44 @@
   "author" : "ribot",
   "commands" : [
     {
-      "script" : "toggle-user-flow-metadata.cocoascript",
+      "script" : "toggle-user-flow-metadata.js",
       "handler" : "toggleUserFlowMetadata",
       "shortcut" : "cmd ctrl d",
-      "name" : "Toggle User Flow Metadata",
+      "name" : "1. Toggle User Flow Metadata",
       "identifier" : "toggleUserFlowMetadata"
     },
     {
-      "script" : "export-for-user-flows.cocoascript",
+      "script" : "export-for-user-flows.js",
       "handler" : "exportForUserFlows",
       "shortcut" : "cmd ctrl e",
-      "name" : "Export for User Flows",
+      "name" : "2. Export for User Flows",
       "identifier" : "exportForUserFlows"
     },
     {
-      "script" : "populate-user-flows.cocoascript",
+      "script" : "populate-user-flows.js",
       "handler" : "populateUserFlows",
       "shortcut" : "cmd ctrl p",
-      "name" : "Populate User Flows",
+      "name" : "3. Populate User Flows",
       "identifier" : "populateUserFlows"
+    },
+    {
+      "script" : "populate-responsive-user-flows.js",
+      "handler" : "populateResponsiveUserFlows",
+      "shortcut" : "cmd ctrl option p",
+      "name" : "4. Populate Responsive User Flows",
+      "identifier" : "populateResponsiveUserFlows"
     }
   ],
   "menu": {
     "items": [
       "toggleUserFlowMetadata",
       "exportForUserFlows",
-      "populateUserFlows"
+      "populateUserFlows",
+      "populateResponsiveUserFlows"
     ]
   },
   "identifier" : "uk.co.ribot.sketch.user-flow-docs",
-  "version" : "1.0",
+  "version" : "1.1",
   "description" : "Example Sketch Plugin using resources from within the bundle and a library script.",
   "authorEmail" : "rob@ribot.co.uk",
   "name" : "User Flow Docs"

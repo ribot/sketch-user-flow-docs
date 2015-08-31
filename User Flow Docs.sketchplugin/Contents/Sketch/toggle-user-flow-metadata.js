@@ -1,6 +1,6 @@
-@import 'sandbox.js';
-@import 'constants.js';
-@import 'utils.js';
+// @import 'libs/sandbox.js';
+@import 'libs/constants.js';
+@import 'libs/utils.js';
 
 // Globals
 var key = new RegExp( userFlowMetadataLayerName );

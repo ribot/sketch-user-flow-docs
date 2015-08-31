@@ -1,20 +1,22 @@
-@import 'sandbox.js';
-@import 'constants.js';
-@import 'utils.js';
+@import 'libs/sandbox.js';
+@import 'libs/constants.js';
+@import 'libs/utils.js';
 
 // Globals
 var userFlowMetadataLayerNameKey = new RegExp( userFlowMetadataLayerName );
 var doc;
 
 // Sandboxing
-var homeFolder = "/Users/" + NSUserName();
-new AppSandbox().authorize( homeFolder, exportForUserFlows );
-
-// onRun handler
 function exportForUserFlows( context ) {
-    // Set global
     doc = context.document;
 
+    var homeFolder = "/Users/" + NSUserName();
+    new AppSandbox().authorize( homeFolder, doExport );
+}
+
+// onRun handler
+function doExport() {
+    // Set global
     if ( doc.fileURL() == null ) {
         doc.showMessage( "Please save your document first." );
         return;
@@ -67,7 +69,12 @@ function exportForUserFlows( context ) {
                 if ( artboard.class() == MSArtboardGroup.class() ) {
                     // Export the artboard to the correct file location
                     var artboardPath = pageDirectoryUrl.URLByAppendingPathComponent( artboard.name() + fileExtension ).path()
-                    [doc saveArtboardOrSlice:artboard toFile:artboardPath];
+
+                    var sizes = artboard.exportOptions().sizes().array()
+                    var slices = MSSliceMaker.slicesFromExportableLayer_sizes(artboard, sizes).objectEnumerator()
+                    while( slice = slices.nextObject() ) {
+                        doc.saveArtboardOrSlice_toFile(slice, artboardPath);
+                    }
 
                     var screen = getArtboardData( artboard );
                     if ( !screen ) {

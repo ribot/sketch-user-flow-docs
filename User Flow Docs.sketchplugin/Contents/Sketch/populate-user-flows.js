@@ -1,6 +1,6 @@
-@import 'sandbox.js';
-@import 'constants.js';
-@import 'utils.js';
+// @import 'libs/sandbox.js';
+@import 'libs/constants.js';
+@import 'libs/utils.js';
 
 // Globals
 var doc;
@@ -84,6 +84,8 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
     while (folder = folderLoop.nextObject()) {
     	var key = folder.lastPathComponent();
     	var folderData = screenData[ key ];
+
+    	log( folderData.title )
 
     	// Check if it's a folder and if shouldIgnoreItem should be ignored
     	if( folder.pathExtension() == "" && !shouldIgnoreItem( folderData ) ) {
