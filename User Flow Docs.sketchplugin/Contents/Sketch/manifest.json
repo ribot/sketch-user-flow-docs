@@ -4,7 +4,7 @@
     {
       "script" : "toggle-user-flow-metadata.js",
       "handler" : "toggleUserFlowMetadata",
-      "shortcut" : "cmd ctrl d",
+      "shortcut" : "cmd ctrl m",
       "name" : "1. Toggle User Flow Metadata",
       "identifier" : "toggleUserFlowMetadata"
     },

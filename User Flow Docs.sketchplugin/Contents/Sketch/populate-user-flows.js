@@ -94,7 +94,7 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 			var page = duplicateTemplatePage(templatePage)
 
 	    	// Get folder name (for page title)
-	        var sectionDisplayName = folderData.title
+	        var sectionDisplayName = folderData.original
 
 	    	// Get files for current folder
 	    	var files = fileManager.shallowSubpathsOfDirectoryAtURL(folder)
