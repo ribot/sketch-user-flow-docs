@@ -35,7 +35,7 @@ In your visual design document...
 5. Save your User Flow doc
 
 # Compatibility
-Tested on Sketch 3.2
+Tested on Sketch 3.3 and 3.4
 
 # Licence
 ```

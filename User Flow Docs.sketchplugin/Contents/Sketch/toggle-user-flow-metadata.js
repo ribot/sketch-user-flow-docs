@@ -3,23 +3,23 @@
 @import 'libs/utils.js';
 
 // Globals
-var key = new RegExp( USER_FLOW_METADATA_LAYER_NAME );
+var key = new RegExp(USER_FLOW_METADATA_LAYER_NAME);
 var doc;
 
 // onRun handler
-function toggleUserFlowMetadata( context ) {
+function toggleUserFlowMetadata(context) {
 	doc = context.document;
-	print( doc )
+	print(doc)
 
-	toggleVisibilityAllLayers( doc.currentPage().layers().array() )
+	toggleVisibilityAllLayers(doc.currentPage().layers().array())
 }
 
 // Traverses layer tree and toggles visibility of all layers where name matches key
-function toggleVisibilityAllLayers( layers ) {
-	print( layers )
-    processAllLayers( layers, function( layer ) {
-        if ( key.test( layer.name() ) ) {
-            layer.setIsVisible( !layer.isVisible() )
+function toggleVisibilityAllLayers(layers) {
+	print(layers)
+    processAllLayers(layers, function(layer) {
+        if (key.test(layer.name())) {
+            layer.setIsVisible(!layer.isVisible())
         }
-    } )
+    })
 }

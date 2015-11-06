@@ -6,7 +6,7 @@
 var doc;
 
 // onRun handler
-function populateUserFlows( context ) {
+function populateUserFlows(context) {
   doc = context.document;
 
   var path = getExportsFolder();
@@ -40,7 +40,7 @@ function populateUserFlows( context ) {
   finish();
 }
 
-function getMetadata( path ) {
+function getMetadata(path) {
   var metadataFilePath = path.URLByAppendingPathComponent(METADATA_FILE_NAME);
   var metadataString = [NSString stringWithContentsOfURL:metadataFilePath encoding:NSUTF8StringEncoding error:null];
   return JSON.parse(metadataString);
@@ -83,7 +83,7 @@ function getTemplateScreens() {
 // Populate screens
 function populateScreens(path, templatePage, numberOfScreensPerPage, projectName, screenData) {
   var fileManager = NSFileManager.defaultManager();
-  var folders = fileManager.shallowSubpathsOfDirectoryAtURL( path );
+  var folders = fileManager.shallowSubpathsOfDirectoryAtURL(path);
 
   // Loop through folders
   var folderLoop = folders.objectEnumerator();
@@ -92,7 +92,7 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
     var folderData = screenData[ key ];
 
     // Check if it's a folder and if shouldIgnoreItem should be ignored
-    if( isFolder( folder ) || shouldIgnoreItem( folderData ) ) {
+    if(isFolder(folder) || shouldIgnoreItem(folderData)) {
       return;
     }
 
@@ -111,19 +111,19 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
 
     // Sort files like finder
     var sortedFiles = []
-    for ( var i=0; i<numberOfFilesInFolder; i++ ) {
-      sortedFiles.push( [NSDictionary dictionaryWithObjectsAndKeys: files[i], @"name" ] );
+    for (var i=0; i<numberOfFilesInFolder; i++) {
+      sortedFiles.push([NSDictionary dictionaryWithObjectsAndKeys: files[i], @"name" ]);
     }
-    sortedFiles.sort( sortLikeFinder );
+    sortedFiles.sort(sortLikeFinder);
 
     // Loop through files
-    for ( var i=0; i<numberOfFilesInFolder; i++ ) {
+    for (var i=0; i<numberOfFilesInFolder; i++) {
       var file = sortedFiles[i].name;
       var key = file.lastPathComponent().stringByDeletingPathExtension();
       var fileData = folderData.screens[ key ];
 
       // Abort if we should ignore this image
-      if( shouldIgnoreItem( fileData ) ) {
+      if(shouldIgnoreItem(fileData)) {
         continue;
       }
 
@@ -140,13 +140,13 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
       var image = NSImage.alloc().initWithData(data);
 
       // Use 'replace image' action
-      var replaceAction = doc.actionsController().actionWithName( "MSReplaceImageAction" );
-      replaceAction.applyImage_tolayer( image, placeholderLayer );
+      var replaceAction = doc.actionsController().actionWithName("MSReplaceImageAction");
+      replaceAction.applyImage_tolayer(image, placeholderLayer);
 
       // Reposition and resize new image
       // This is mostly used for cropping screens that are too big (e.g. websites)
-      if ( maskLayer && fileData.size.width ) {
-        placeholderLayer.setConstrainProportions( false );
+      if (maskLayer && fileData.size.width) {
+        placeholderLayer.setConstrainProportions(false);
 
         var rect = CGRectZero;
         rect.size.width = placeholderLayer.rect().size.width;
@@ -154,23 +154,23 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
         rect.origin.x = maskLayer.rect().origin.x;
         rect.origin.y = maskLayer.rect().origin.y;
 
-        placeholderLayer.setRect( rect );
-        placeholderLayer.setConstrainProportions( true );
+        placeholderLayer.setRect(rect);
+        placeholderLayer.setConstrainProportions(true);
       }
 
       // Update screen number
-      setTextOnChildLayerByName( screenGroup, SCREEN_NUMBER_LAYER_NAME, fileData.tag );
+      setTextOnChildLayerByName(screenGroup, SCREEN_NUMBER_LAYER_NAME, fileData.tag);
 
       // Update heading text
-      setTextOnChildLayerByName( screenGroup, SCREEN_HEADING_LAYER_NAME, fileData.title );
+      setTextOnChildLayerByName(screenGroup, SCREEN_HEADING_LAYER_NAME, fileData.title);
 
       // Update description
-      setTextOnChildLayerByName( screenGroup, SCREEN_DESCRIPTION_LAYER_NAME, fileData.description || '' );
+      setTextOnChildLayerByName(screenGroup, SCREEN_DESCRIPTION_LAYER_NAME, fileData.description || '');
 
       // Update status
-      if ( fileData.status ) {
-        setTextOnChildLayerByName( screenGroup, SCREEN_STATUS_LAYER_NAME, fileData.status );
-        var screenStatusLayer = getChildLayerByName( screenGroup, SCREEN_STATUS_LAYER_NAME );
+      if (fileData.status) {
+        setTextOnChildLayerByName(screenGroup, SCREEN_STATUS_LAYER_NAME, fileData.status);
+        var screenStatusLayer = getChildLayerByName(screenGroup, SCREEN_STATUS_LAYER_NAME);
         screenStatusLayer.setIsVisible(true);
       }
 
@@ -191,10 +191,10 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
       var haveRunOutOfScreensForSection = (screensInSectionCount == numberOfFilesInFolder);
       if (haveRunOutOfScreensForSection) {
         // Work out how many slots left
-        var slotsLeft = ( numberOfScreensPerPage - screenCount ) % numberOfScreensPerPage;
+        var slotsLeft = (numberOfScreensPerPage - screenCount) % numberOfScreensPerPage;
 
         // Remove empty slots
-        var screens = getChildLayerByName( getFirstArtboard(), SCREENS_LAYER_GROUP_NAME );
+        var screens = getChildLayerByName(getFirstArtboard(), SCREENS_LAYER_GROUP_NAME);
         for (var j=0; j<slotsLeft; j++) {
           screens.removeLayer(screens.lastLayer());
         }
@@ -211,16 +211,16 @@ function populateScreens(path, templatePage, numberOfScreensPerPage, projectName
         page = duplicateTemplatePage(templatePage);
       }
 
-      doc.refreshSidebarWithMask( 1 );
+      doc.refreshSidebarWithMask(1);
     }
   }
 }
 
-function shouldIgnoreItem( item ) {
-  if ( typeof item  == 'undefined' ) {
+function shouldIgnoreItem(item) {
+  if (typeof item  == 'undefined') {
     return false;
   }
-  return ( item.exclude ) ? true : false;
+  return (item.exclude) ? true : false;
 }
 
 function duplicateTemplatePage(templatePage) {
@@ -250,10 +250,10 @@ function populateCover(projectName, documentVersion) {
 
 function removeTemplatePages() {
   var templatePages = getPagesByName(TEMPLATE_PAGE_NAME);
-  doc.pages().removeObjectsInArray( templatePages );
+  doc.pages().removeObjectsInArray(templatePages);
 }
 
 // TODO: Show save dialog
 function finish() {
-  doc.showMessage( "All done!" );
+  doc.showMessage("All done!");
 }
