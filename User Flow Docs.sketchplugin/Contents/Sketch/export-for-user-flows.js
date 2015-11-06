@@ -3,7 +3,7 @@
 @import 'libs/utils.js';
 
 // Globals
-var userFlowMetadataLayerNameKey = new RegExp( userFlowMetadataLayerName );
+var USER_FLOW_METADATA_LAYER_NAMEKEY = new RegExp( USER_FLOW_METADATA_LAYER_NAME );
 var doc;
 
 // Sandboxing
@@ -68,7 +68,7 @@ function doExport() {
                 // Check that it's an artboard and not a slice
                 if ( artboard.class() == MSArtboardGroup.class() ) {
                     // Export the artboard to the correct file location
-                    var artboardPath = pageDirectoryUrl.URLByAppendingPathComponent( artboard.name() + fileExtension ).path()
+                    var artboardPath = pageDirectoryUrl.URLByAppendingPathComponent( artboard.name() + FILE_EXTENSION ).path()
 
                     var sizes = artboard.exportOptions().sizes().array()
                     var slices = MSSliceMaker.slicesFromExportableLayer_sizes(artboard, sizes).objectEnumerator()
@@ -91,18 +91,18 @@ function doExport() {
         }
 
         // Add the sections
-        jsonObject[ sectionsJSONKey ] = sectionsJson;
+        jsonObject[ SECTIONS_JSON_KEY ] = sectionsJson;
 
         // Ask the user for the name of the project
         var projectName = [doc askForUserInput:"What is this project called?" initialValue:guessProjectName()]
-        jsonObject[projectNameJSONKey] = new String(projectName)
+        jsonObject[PROJECT_NAME_JSON_KEY] = new String(projectName)
 
         // Ask the user for the verson of the document
         var documentVersion = [doc askForUserInput:"What version of the document is this?" initialValue:guessDocumentVersion()]
-        jsonObject[documentVersionJSONKey] = new String(documentVersion)
+        jsonObject[DOCUMENT_VERSION_JSON_KEY] = new String(documentVersion)
 
         // Convert the descriptions object to JSON
-        var metadataFilePath = exportBaseUrl.URLByAppendingPathComponent(metadataFilename).path()
+        var metadataFilePath = exportBaseUrl.URLByAppendingPathComponent(METADATA_FILE_NAME).path()
         var jsonString = [NSString stringWithFormat:"%@", JSON.stringify(jsonObject)];
         print( jsonString );
 
@@ -127,7 +127,7 @@ function getFilenameWithoutExtension() {
 
 function hideScreenDescriptions( layers ) {
     processAllLayers( layers, function( layer ) {
-        if ( userFlowMetadataLayerNameKey.test( layer.name() ) ) {
+        if ( USER_FLOW_METADATA_LAYER_NAMEKEY.test( layer.name() ) ) {
             layer.setIsVisible( false )
         }
     } )
@@ -141,11 +141,11 @@ function getArtboardData( artboard ) {
     }
 
     // Get any metadata
-    var possibleMetadataLayer = getChildLayerByName(artboard, userFlowMetadataLayerName)
+    var possibleMetadataLayer = getChildLayerByName(artboard, USER_FLOW_METADATA_LAYER_NAME)
     if ( possibleMetadataLayer ) {
 
         // Get description
-        var possibleDescriptionLayer = getChildLayerByName(possibleMetadataLayer, userFlowDescriptionLayerName)
+        var possibleDescriptionLayer = getChildLayerByName(possibleMetadataLayer, USER_FLOW_DESCRIPTION_LAYER_NAME)
         if (possibleDescriptionLayer) {
             artboardData.description = new String(possibleDescriptionLayer.stringValue())
         }

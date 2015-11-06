@@ -3,7 +3,7 @@
 @import 'libs/utils.js';
 
 // Globals
-var key = new RegExp( userFlowMetadataLayerName );
+var key = new RegExp( USER_FLOW_METADATA_LAYER_NAME );
 var doc;
 
 // onRun handler
