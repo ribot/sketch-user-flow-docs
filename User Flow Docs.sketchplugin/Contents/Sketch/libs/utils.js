@@ -68,3 +68,6 @@ function processAllLayers(layers, callback) {
   }
 }
 
+function isFolder( folder ) {
+  return folder.pathExtension() != "";
+}
