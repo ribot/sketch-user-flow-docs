@@ -5,13 +5,10 @@ This plugin exports every artboard in your design document and allows you to cre
 - Populate User Flows (⌃⇧P)
 
 # Installation
-1. Download the repository using this [link](https://github.com/ribot/sketch-linked-images/archive/master.zip)
+1. Download the repository using this [link](https://github.com/ribot/sketch-user-flow-docs/archive/master.zip)
 2. Unzip the files from the ZIP
 3. In Sketch 3, select `Plugins > Reveal Plugins Folder...` from the menu bar
 4. Put the (downloaded, unzipped) folder in here
-5. Rename it `ribot User Flows`
-5. Go up a level in Finder and create a new folder called `Templates`
-6. Copy the latest templates from `Dropbox > Design Templates > Sketch Templates`
 
 # Setup
 In your visual design document...
