@@ -71,7 +71,7 @@ function doExport() {
                     var artboardPath = pageDirectoryUrl.URLByAppendingPathComponent(artboard.name() + FILE_EXTENSION).path()
 
                     var sizes = artboard.exportOptions().sizes().array()
-                    var slices = MSSliceMaker.slicesFromExportableLayer_sizes(artboard, sizes).objectEnumerator()
+                    var slices = _getSlices(artboard, sizes)
                     while(slice = slices.nextObject()) {
                         doc.saveArtboardOrSlice_toFile(slice, artboardPath);
                     }
@@ -131,6 +131,13 @@ function hideScreenDescriptions(layers) {
             layer.setIsVisible(false)
         }
     })
+}
+
+function _getSlices( artboard, sizes ) {
+    if ( MSSliceMaker.slicesFromExportableLayer_sizes ) {
+        return MSSliceMaker.slicesFromExportableLayer_sizes(artboard, sizes).objectEnumerator()
+    }
+    return MSSliceMaker.slicesFromExportableLayer_sizes_useIDForName(artboard, sizes, false).objectEnumerator()
 }
 
 function getArtboardData(artboard) {
