@@ -70,7 +70,7 @@ function doExport() {
                     // Export the artboard to the correct file location
                     var artboardPath = pageDirectoryUrl.URLByAppendingPathComponent(artboard.name() + FILE_EXTENSION).path()
 
-                    var sizes = artboard.exportOptions().sizes().array()
+                    var sizes = artboard.exportOptions().exportFormats().array()
                     var slices = _getSlices(artboard, sizes)
                     while(slice = slices.nextObject()) {
                         doc.saveArtboardOrSlice_toFile(slice, artboardPath);
@@ -136,8 +136,13 @@ function hideScreenDescriptions(layers) {
 function _getSlices( artboard, sizes ) {
     if ( MSSliceMaker.slicesFromExportableLayer_sizes ) {
         return MSSliceMaker.slicesFromExportableLayer_sizes(artboard, sizes).objectEnumerator()
+    } else if ( MSSliceMaker.slicesFromExportableLayer_sizes_useIDForName ) {
+        return MSSliceMaker.slicesFromExportableLayer_sizes_useIDForName(artboard, sizes, false).objectEnumerator()
+    } else if ( MSSliceMaker.slicesFromExportableLayer ) {
+        return MSSliceMaker.slicesFromExportableLayer(artboard).objectEnumerator()
+    } else {
+        print( "Can't export slices. Probably an upgrade problem…");
     }
-    return MSSliceMaker.slicesFromExportableLayer_sizes_useIDForName(artboard, sizes, false).objectEnumerator()
 }
 
 function getArtboardData(artboard) {
@@ -172,8 +177,9 @@ function parseName(name) {
     var original = new String(name);
     var nameParts = name.split(" ");
     if (nameParts.length === 1) {
-        doc.showMessage('"' + name + '" is not formatted correctly. Please use a name such as "01 Home"');
-        return;
+        return {
+            exclude: true
+        };
     }
 
     var tag = nameParts[ 0 ];

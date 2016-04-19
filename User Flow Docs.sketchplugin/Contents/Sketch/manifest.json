@@ -40,7 +40,7 @@
   },
   "identifier" : "uk.co.ribot.sketch.user-flow-docs",
   "version" : "1.1",
-  "description" : "Example Sketch Plugin using resources from within the bundle and a library script.",
+  "description" : "Export every artboard in your design document and create a user flows document for clients by populating a template.",
   "authorEmail" : "rob@ribot.co.uk",
   "name" : "User Flow Docs"
 }
